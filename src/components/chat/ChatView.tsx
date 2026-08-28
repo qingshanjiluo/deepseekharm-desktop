@@ -5,6 +5,7 @@ import { AttachmentButton } from './AttachmentButton'
 import { SlashCommandMenu } from './SlashCommandMenu'
 import type { SlashCommand } from './SlashCommandMenu'
 import { SettingsModal } from '../settings/SettingsModal'
+import { ModelSelector } from '../model/ModelSelector'
 import './ChatView.css'
 
 interface Attachment {
@@ -265,7 +266,7 @@ export function ChatView() {
         </button>
         <div className="header-info">
           <h2 className="session-title">{currentSession?.name || '新会话'}</h2>
-          <span className="model-badge">{settings.model}</span>
+          <ModelSelector compact />
         </div>
         <div className="header-actions">
           <button 
