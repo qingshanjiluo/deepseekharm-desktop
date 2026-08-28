@@ -5,9 +5,10 @@ import './ToolCallTree.css'
 
 interface ToolCallTreeProps {
   toolCalls: ToolCall[]
+  onShowDetails?: (toolCall: ToolCall) => void
 }
 
-export function ToolCallTree({ toolCalls }: ToolCallTreeProps) {
+export function ToolCallTree({ toolCalls, onShowDetails }: ToolCallTreeProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   const toggleExpand = (id: string) => {
@@ -39,6 +40,7 @@ export function ToolCallTree({ toolCalls }: ToolCallTreeProps) {
             tool={tool}
             isExpanded={expandedIds.has(tool.id)}
             onToggle={() => toggleExpand(tool.id)}
+            onShowDetails={onShowDetails}
           />
         ))}
       </div>
@@ -50,9 +52,10 @@ interface ToolCallItemProps {
   tool: ToolCall
   isExpanded: boolean
   onToggle: () => void
+  onShowDetails?: (toolCall: ToolCall) => void
 }
 
-function ToolCallItem({ tool, isExpanded, onToggle }: ToolCallItemProps) {
+function ToolCallItem({ tool, isExpanded, onToggle, onShowDetails }: ToolCallItemProps) {
   // 解析参数
   let parsedArgs: Record<string, any> = {}
   try {
@@ -119,6 +122,19 @@ function ToolCallItem({ tool, isExpanded, onToggle }: ToolCallItemProps) {
             </span>
           )}
         </div>
+        {onShowDetails && (
+          <button 
+            className="details-btn"
+            onClick={(e) => { e.stopPropagation(); onShowDetails(tool) }}
+            title="查看详情"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </button>
+        )}
         <svg 
           className={`expand-arrow ${isExpanded ? 'expanded' : ''}`}
           width="12" 

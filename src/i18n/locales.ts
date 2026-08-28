@@ -77,6 +77,7 @@ export interface TranslationKeys {
     attachments: string
     removeAttachment: string
     turns: string
+    you: string
     suggestionCrawler: string
     suggestionClosure: string
     suggestionOptimize: string
@@ -270,6 +271,7 @@ const zhCN: TranslationKeys = {
     attachments: '附件',
     removeAttachment: '移除附件',
     turns: '轮对话',
+    you: '你',
     suggestionCrawler: '写一个 Python 爬虫',
     suggestionClosure: '解释 JavaScript 闭包',
     suggestionOptimize: '优化代码性能',
@@ -458,6 +460,7 @@ const enUS: TranslationKeys = {
     attachments: 'Attachments',
     removeAttachment: 'Remove attachment',
     turns: 'turns',
+    you: 'You',
     suggestionCrawler: 'Write a Python crawler',
     suggestionClosure: 'Explain JavaScript closures',
     suggestionOptimize: 'Optimize code performance',
@@ -646,6 +649,7 @@ const jaJP: TranslationKeys = {
     attachments: '添付ファイル',
     removeAttachment: '添付ファイルを削除',
     turns: 'ターン',
+    you: 'あなた',
     suggestionCrawler: 'Pythonクローラーを作成',
     suggestionClosure: 'JavaScriptのクロージャを説明',
     suggestionOptimize: 'コードのパフォーマンスを最適化',

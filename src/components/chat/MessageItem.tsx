@@ -3,6 +3,9 @@ import { Message } from '../../store'
 import { MarkdownText } from './MarkdownText'
 import { ReasoningRow } from './ReasoningRow'
 import { ToolCallTree } from './ToolCallTree'
+import { ApprovalCommand } from './ApprovalCommand'
+import { PermissionSelect } from './PermissionSelect'
+import { ToolDetails } from './ToolDetails'
 import { useTranslation } from '../../i18n'
 import './MessageItem.css'
 
@@ -27,6 +30,7 @@ export function MessageItem({
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(message.content)
   const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null)
+  const [selectedToolDetails, setSelectedToolDetails] = useState<any>(null)
 
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
@@ -59,6 +63,18 @@ export function MessageItem({
     setFeedback(feedback === type ? null : type)
   }
 
+  const handleApprove = () => {
+    console.log('Tool approved')
+  }
+
+  const handleDeny = () => {
+    console.log('Tool denied')
+  }
+
+  const handleShowToolDetails = (toolCall: any) => {
+    setSelectedToolDetails(toolCall)
+  }
+
   return (
     <div 
       className={`message-item ${message.role}`}
@@ -85,7 +101,7 @@ export function MessageItem({
       <div className="message-body">
         <div className="message-header">
           <span className="message-role">
-            {isUser ? t.chat.send : 'DeepSeek'}
+            {isUser ? t.chat.you : 'DeepSeek'}
           </span>
           <span className="message-time">
             {new Date(message.timestamp).toLocaleTimeString('zh-CN', {
@@ -146,8 +162,18 @@ export function MessageItem({
 
         {/* 工具调用展示 */}
         {message.toolCalls && message.toolCalls.length > 0 && (
-          <ToolCallTree toolCalls={message.toolCalls} />
+          <ToolCallTree 
+            toolCalls={message.toolCalls} 
+            onShowDetails={handleShowToolDetails}
+          />
         )}
+
+        {/* 权限选择 */}
+        <PermissionSelect 
+          onAllow={handleApprove}
+          onDeny={handleDeny}
+          toolName="bash"
+        />
       </div>
 
       {/* 操作按钮 */}
@@ -226,6 +252,14 @@ export function MessageItem({
             </>
           )}
         </div>
+      )}
+
+      {/* 工具详情弹窗 */}
+      {selectedToolDetails && (
+        <ToolDetails 
+          toolCall={selectedToolDetails}
+          onClose={() => setSelectedToolDetails(null)}
+        />
       )}
     </div>
   )

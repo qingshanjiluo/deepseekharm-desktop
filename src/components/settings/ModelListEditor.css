@@ -1,0 +1,127 @@
+.model-list-editor {
+  margin-top: 8px;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.editor-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.reset-btn {
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+.model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.model-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.15s ease;
+}
+
+.model-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.model-item.dragging {
+  opacity: 0.5;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.model-item.disabled {
+  opacity: 0.5;
+}
+
+.drag-handle {
+  color: #4a5568;
+  cursor: grab;
+}
+
+.model-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.model-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.model-tokens {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.model-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.toggle-btn {
+  padding: 3px 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  transition: all 0.15s ease;
+}
+
+.toggle-btn.on {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: none;
+  border: none;
+  color: #4a5568;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}

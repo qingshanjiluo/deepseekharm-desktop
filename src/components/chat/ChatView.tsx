@@ -10,7 +10,7 @@ import { SettingsModal } from '../settings/SettingsModal'
 import { ModelSelector } from '../model/ModelSelector'
 import { TrajectoryView } from '../trajectory/TrajectoryView'
 import { KnowledgePanel } from '../knowledge/KnowledgePanel'
-import { knowledgeService } from '../../services/knowledge-service'
+import { IconFile, IconZap } from '../icons'
 import { useTranslation } from '../../i18n'
 import { usePointerScrollbar } from '../../hooks'
 import './ChatView.css'
@@ -263,6 +263,7 @@ export function ChatView() {
 
         let fullContent = ''
         let reasoningContent = ''
+        let receivedUsage = false
         
         for await (const chunk of stream) {
           if (chunk.type === 'text-delta' && chunk.delta) {
@@ -278,6 +279,7 @@ export function ChatView() {
           
           // 处理使用量统计
           if (chunk.type === 'usage' && chunk.usage) {
+            receivedUsage = true
             updateMessage(sessionId, assistantMsg.id, {
               usage: {
                 promptTokens: chunk.usage.inputTokens,
@@ -298,7 +300,7 @@ export function ChatView() {
         }
 
         // 如果没有收到 usage，使用估算值
-        if (!fullContent.includes('tokens')) {
+        if (!receivedUsage) {
           updateMessage(sessionId, assistantMsg.id, {
             usage: {
               promptTokens: Math.floor(content.length * 1.5),

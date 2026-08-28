@@ -1,0 +1,218 @@
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.onboarding-dialog {
+  width: 440px;
+  max-width: 90vw;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.onboarding-step {
+  padding: 40px 32px 24px;
+  text-align: center;
+}
+
+.step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 16px;
+}
+
+.step-icon.welcome {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
+.step-icon.api {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.step-icon.model {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.step-icon.done {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.onboarding-step h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.onboarding-step p {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.input-group {
+  margin-bottom: 24px;
+}
+
+.onboarding-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #e2e8f0;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.onboarding-input:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.onboarding-input::placeholder {
+  color: #64748b;
+}
+
+.input-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.model-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.model-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.model-option:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.model-option.selected {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.option-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.option-desc {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.step-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.primary-btn, .secondary-btn, .skip-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primary-btn {
+  background: #6366f1;
+  color: white;
+}
+
+.primary-btn:hover {
+  background: #5558e6;
+}
+
+.primary-btn:disabled {
+  background: #4a5568;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+.skip-btn {
+  background: none;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.skip-btn:hover {
+  color: #94a3b8;
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.dot.active {
+  background: #6366f1;
+  width: 18px;
+  border-radius: 3px;
+}
+
+.dot.completed {
+  background: rgba(99, 102, 241, 0.5);
+}
