@@ -1,0 +1,91 @@
+.app-frame {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #1a1a2e;
+}
+
+/* 面板基础样式 */
+.sidebar-panel,
+.main-panel,
+.details-panel {
+  height: 100%;
+  overflow: hidden;
+  transition: width 0.2s ease;
+}
+
+.sidebar-panel {
+  flex-shrink: 0;
+  background: #16213e;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-panel.collapsed {
+  width: 0 !important;
+  border-right: none;
+}
+
+.main-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.details-panel {
+  flex-shrink: 0;
+  background: #16213e;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.details-panel.collapsed {
+  width: 0 !important;
+  border-left: none;
+}
+
+/* 拖拽手柄 */
+.resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.resize-handle:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+.resize-handle:active {
+  background: rgba(99, 102, 241, 0.8);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .sidebar-panel {
+    position: absolute;
+    z-index: 100;
+    height: 100%;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .sidebar-panel.collapsed {
+    transform: translateX(-100%);
+  }
+
+  .details-panel {
+    position: absolute;
+    right: 0;
+    z-index: 100;
+    height: 100%;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .details-panel.collapsed {
+    transform: translateX(100%);
+  }
+
+  .resize-handle {
+    display: none;
+  }
+}

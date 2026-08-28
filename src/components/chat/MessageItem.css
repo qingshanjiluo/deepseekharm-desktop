@@ -1,0 +1,265 @@
+.message-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.message-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.message-item.user {
+  background: rgba(99, 102, 241, 0.03);
+}
+
+.message-item.user:hover {
+  background: rgba(99, 102, 241, 0.06);
+}
+
+/* 头像 */
+.message-avatar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  margin-top: 2px;
+}
+
+.message-avatar.user {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.message-avatar.assistant {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+/* 消息主体 */
+.message-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.message-role {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* 消息内容 */
+.message-content {
+  position: relative;
+}
+
+.user-message {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #e2e8f0;
+  line-height: 1.6;
+}
+
+.cursor-blink {
+  display: inline-block;
+  color: #6366f1;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* 编辑模式 */
+.edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+
+.edit-textarea:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.edit-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edit-btn.cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+.edit-btn.cancel:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+}
+
+.edit-btn.save {
+  background: #6366f1;
+  border: none;
+  color: white;
+}
+
+.edit-btn.save:hover {
+  background: #5558e6;
+}
+
+/* Token 统计 */
+.message-usage {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.usage-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* 工具调用 */
+.tool-calls {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tool-call-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tool-name {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #a5b4fc;
+}
+
+.tool-result {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* 操作按钮 */
+.message-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(30, 30, 46, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .message-item {
+    padding: 12px 16px;
+  }
+  
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .message-actions {
+    position: static;
+    margin-top: 8px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    justify-content: flex-start;
+  }
+}

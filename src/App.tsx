@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+import { AppFrame } from './components/layout/AppFrame'
+import { ChatView } from './components/chat/ChatView'
+import { useAppStore } from './store'
 import './App.css'
 
 // 声明全局API类型
@@ -55,171 +58,67 @@ declare global {
 }
 
 function App() {
-  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([])
-  const [inputValue, setInputValue] = useState('')
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [currentModel, setCurrentModel] = useState('deepseek-chat')
-  const [models, setModels] = useState<any[]>([])
   const [platform, setPlatform] = useState('')
+  const { settings } = useAppStore()
 
   useEffect(() => {
     // 获取系统信息
     if (window.deepSeek) {
       window.deepSeek.system.getPlatform().then(setPlatform)
-      window.deepSeek.llm.listModels().then(setModels)
     }
   }, [])
 
-  const handleSend = async () => {
-    if (!inputValue.trim() || isStreaming) return
-
-    const userMessage = { role: 'user', content: inputValue }
-    setMessages(prev => [...prev, userMessage])
-    setInputValue('')
-    setIsStreaming(true)
-
-    // 添加助手消息占位符
-    const assistantMessage = { role: 'assistant', content: '' }
-    setMessages(prev => [...prev, assistantMessage])
-
-    try {
-      if (window.deepSeek) {
-        const stream = window.deepSeek.llm.stream({
-          provider: 'deepseek',
-          model: currentModel,
-          messages: [...messages, userMessage].map(m => ({
-            role: m.role,
-            content: m.content,
-          })),
-        })
-
-        let content = ''
-        for await (const chunk of stream) {
-          if (chunk.type === 'text-delta' && chunk.delta) {
-            content += chunk.delta
-            setMessages(prev => {
-              const newMessages = [...prev]
-              newMessages[newMessages.length - 1] = {
-                role: 'assistant',
-                content,
-              }
-              return newMessages
-            })
-          }
-        }
-      } else {
-        // 模拟响应
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setMessages(prev => {
-          const newMessages = [...prev]
-          newMessages[newMessages.length - 1] = {
-            role: 'assistant',
-            content: '这是一个模拟响应。请在Electron环境中运行以获得完整功能。',
-          }
-          return newMessages
-        })
-      }
-    } catch (error) {
-      console.error('Stream error:', error)
-      setMessages(prev => {
-        const newMessages = [...prev]
-        newMessages[newMessages.length - 1] = {
-          role: 'assistant',
-          content: `错误: ${error instanceof Error ? error.message : '未知错误'}`,
-        }
-        return newMessages
-      })
-    } finally {
-      setIsStreaming(false)
-    }
+  // 窗口控制
+  const handleMinimize = async () => {
+    await window.deepSeek?.window.minimize()
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
+  const handleMaximize = async () => {
+    await window.deepSeek?.window.maximize()
+  }
+
+  const handleClose = async () => {
+    await window.deepSeek?.window.close()
   }
 
   return (
-    <div className="app">
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <h1>DeepSeek Harness</h1>
-          <span className="version">v1.0.0</span>
-        </div>
-        <div className="sidebar-content">
-          <div className="section">
-            <h3>会话</h3>
-            <button className="new-session-btn">新建会话</button>
+    <div className="app" data-theme={settings.theme}>
+      {/* 自定义标题栏 (仅 Windows) */}
+      {platform === 'win32' && (
+        <div className="titlebar">
+          <div className="titlebar-title">
+            <svg className="titlebar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+            <span>DeepSeek Harness</span>
           </div>
-          <div className="section">
-            <h3>模型</h3>
-            <select 
-              value={currentModel} 
-              onChange={(e) => setCurrentModel(e.target.value)}
-              className="model-select"
-            >
-              <option value="deepseek-chat">DeepSeek Chat</option>
-              <option value="deepseek-coder">DeepSeek Coder</option>
-              <option value="deepseek-reasoner">DeepSeek Reasoner</option>
-            </select>
-          </div>
-        </div>
-        <div className="sidebar-footer">
-          <div className="system-info">
-            <span>平台: {platform || '未知'}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="main">
-        <div className="messages">
-          {messages.length === 0 ? (
-            <div className="empty-state">
-              <h2>欢迎使用 DeepSeek Harness</h2>
-              <p>开始一个新的对话</p>
-            </div>
-          ) : (
-            messages.map((message, index) => (
-              <div 
-                key={index} 
-                className={`message ${message.role}`}
-              >
-                <div className="message-avatar">
-                  {message.role === 'user' ? 'U' : 'AI'}
-                </div>
-                <div className="message-content">
-                  {message.content}
-                  {isStreaming && index === messages.length - 1 && message.role === 'assistant' && (
-                    <span className="cursor">|</span>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="input-area">
-          <div className="input-container">
-            <textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="输入消息... (Enter 发送, Shift+Enter 换行)"
-              disabled={isStreaming}
-              rows={1}
-            />
-            <button 
-              onClick={handleSend}
-              disabled={!inputValue.trim() || isStreaming}
-              className="send-button"
-            >
-              {isStreaming ? '发送中...' : '发送'}
+          <div className="titlebar-controls">
+            <button className="titlebar-btn" onClick={handleMinimize}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+            <button className="titlebar-btn maximize" onClick={handleMaximize}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              </svg>
+            </button>
+            <button className="titlebar-btn close" onClick={handleClose}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
             </button>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* 主框架 */}
+      <AppFrame>
+        <ChatView />
+      </AppFrame>
     </div>
   )
 }
