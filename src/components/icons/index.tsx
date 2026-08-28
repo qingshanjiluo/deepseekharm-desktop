@@ -498,3 +498,9 @@ export const IconKey = ({ size = 16, className }: IconProps) => (
     />
   </svg>
 )
+
+// Re-export brand icons
+export { FishLogo, FishLogoGlow, BrandWordmark, HarnessBadge } from './BrandIcons'
+
+// Re-export all original web version icons
+export * from './OriginalIcons'
