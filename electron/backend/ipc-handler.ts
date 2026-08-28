@@ -1,4 +1,5 @@
-import { ipcMain, BrowserWindow, dialog, app, shell } from 'electron'
+import electron from 'electron'
+const { ipcMain, BrowserWindow, dialog, app, shell } = electron
 import { join } from 'path'
 import { readFile, writeFile, readdir, stat, access, mkdir } from 'fs/promises'
 import { homedir, tmpdir } from 'os'

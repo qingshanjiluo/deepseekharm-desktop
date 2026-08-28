@@ -1,4 +1,5 @@
-import { Tray, Menu, nativeImage, app, BrowserWindow } from 'electron'
+import electron from 'electron'
+const { Tray, Menu, nativeImage, app, BrowserWindow } = electron
 import { join } from 'path'
 
 /**

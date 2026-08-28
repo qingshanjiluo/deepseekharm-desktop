@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session } from 'electron'
+import electron from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { join } from 'path'
 import { IPCHandler } from './backend/ipc-handler'
@@ -6,6 +6,8 @@ import { WindowManager } from './native/window-manager'
 import { TrayManager } from './native/tray'
 import { AutoUpdater } from './native/auto-updater'
 import { SecurityManager } from './security'
+
+const { app, BrowserWindow, session } = electron
 
 // 全局变量控制退出行为
 declare global {
@@ -96,5 +98,5 @@ class DeepSeekHarnessDesktop {
 }
 
 // 启动应用
-const app = new DeepSeekHarnessDesktop()
-app.initialize().catch(console.error)
+const deepseekApp = new DeepSeekHarnessDesktop()
+deepseekApp.initialize().catch(console.error)

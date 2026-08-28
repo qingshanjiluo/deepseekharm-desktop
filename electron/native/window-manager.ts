@@ -1,4 +1,5 @@
-import { BrowserWindow, screen } from 'electron'
+import electron from 'electron'
+const { BrowserWindow, screen } = electron
 import { join } from 'path'
 
 /**
@@ -24,7 +25,7 @@ export class WindowManager {
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
-        preload: join(__dirname, '../preload.js'),
+        preload: join(__dirname, '../preload/preload.js'),
       },
       titleBarStyle: 'hidden',
       titleBarOverlay: {
@@ -40,7 +41,7 @@ export class WindowManager {
     if (process.env.ELECTRON_RENDERER_URL) {
       this.mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
     } else {
-      this.mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+      this.mainWindow.loadFile(join(__dirname, '../../dist/index.html'))
     }
 
     // 窗口准备好后显示
@@ -90,7 +91,7 @@ export class WindowManager {
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
-        preload: join(__dirname, '../preload.js'),
+        preload: join(__dirname, '../preload/preload.js'),
       },
       backgroundColor: '#1e1e1e',
     })
@@ -115,7 +116,7 @@ export class WindowManager {
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
-        preload: join(__dirname, '../preload.js'),
+        preload: join(__dirname, '../preload/preload.js'),
       },
       backgroundColor: '#1e1e1e',
     })

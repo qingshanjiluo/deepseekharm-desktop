@@ -1,4 +1,5 @@
-import { session, app } from 'electron'
+import electron from 'electron'
+const { session, app } = electron
 
 /**
  * 安全管理器

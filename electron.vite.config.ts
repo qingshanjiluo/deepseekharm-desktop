@@ -6,16 +6,15 @@ export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
     build: {
-      outDir: 'dist-electron',
+      outDir: 'dist-electron/main',
+      lib: {
+        entry: resolve(__dirname, 'electron/main.ts'),
+        formats: ['cjs']
+      },
       rollupOptions: {
         external: ['electron'],
-        input: {
-          main: resolve(__dirname, 'electron/main.ts')
-        },
         output: {
-          entryFileNames: '[name].js',
-          chunkFileNames: '[name].js',
-          assetFileNames: '[name].[ext]'
+          entryFileNames: '[name].js'
         }
       }
     },
@@ -28,16 +27,15 @@ export default defineConfig({
   preload: {
     plugins: [externalizeDepsPlugin()],
     build: {
-      outDir: 'dist-electron',
+      outDir: 'dist-electron/preload',
+      lib: {
+        entry: resolve(__dirname, 'electron/preload.ts'),
+        formats: ['cjs']
+      },
       rollupOptions: {
         external: ['electron'],
-        input: {
-          preload: resolve(__dirname, 'electron/preload.ts')
-        },
         output: {
-          entryFileNames: '[name].js',
-          chunkFileNames: '[name].js',
-          assetFileNames: '[name].[ext]'
+          entryFileNames: '[name].js'
         }
       }
     }
@@ -45,11 +43,10 @@ export default defineConfig({
   renderer: {
     root: resolve(__dirname, 'src'),
     build: {
-      outDir: 'dist',
+      outDir: resolve(__dirname, 'dist'),
+      emptyOutDir: true,
       rollupOptions: {
-        input: {
-          index: resolve(__dirname, 'src/index.html')
-        }
+        input: resolve(__dirname, 'src/index.html')
       }
     },
     plugins: [react()],

@@ -1,5 +1,6 @@
 import { autoUpdater, UpdateInfo } from 'electron-updater'
-import { BrowserWindow, dialog } from 'electron'
+import electron from 'electron'
+const { BrowserWindow, dialog } = electron
 
 /**
  * 自动更新管理器
