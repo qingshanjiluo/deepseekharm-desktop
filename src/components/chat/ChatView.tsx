@@ -413,47 +413,49 @@ export function ChatView() {
         <div className="turn-navigator">
           <div className="turn-stats">
             <span className="stat-item">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              {currentSession.messages.filter(m => m.role === 'user').length} 轮对话
+              <IconFile size={12} />
+              {currentSession.messages.filter(m => m.role === 'user').length} {t.chat.turns}
             </span>
             <span className="stat-item">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <IconZap size={12} />
               {totalTokenUsage.toLocaleString()} tokens
             </span>
           </div>
           <div className="turn-list">
-            {turnStats.map((stat) => (
-              <button
-                key={stat.turnNumber}
-                className={`turn-item ${activeTurn === stat.turnNumber ? 'active' : ''}`}
-                onClick={() => {
-                  // 滚动到对应的 Turn
-                  const turnIndex = currentSession.messages.findIndex(
-                    (msg, idx) => {
-                      let turn = 0
-                      for (let i = 0; i <= idx; i++) {
-                        if (currentSession.messages[i].role === 'user' && i > 0) turn++
+            {turnStats.map((stat) => {
+              const duration = stat.endTime 
+                ? Math.round((stat.endTime - stat.startTime) / 1000)
+                : null
+              return (
+                <button
+                  key={stat.turnNumber}
+                  className={`turn-item ${activeTurn === stat.turnNumber ? 'active' : ''}`}
+                  onClick={() => {
+                    const turnIndex = currentSession.messages.findIndex(
+                      (msg, idx) => {
+                        let turn = 0
+                        for (let i = 0; i <= idx; i++) {
+                          if (currentSession.messages[i].role === 'user' && i > 0) turn++
+                        }
+                        return turn === stat.turnNumber
                       }
-                      return turn === stat.turnNumber
-                    }
-                  )
-                  if (turnIndex >= 0) {
-                    const element = messagesListRef.current?.querySelector(
-                      `[data-message-index="${turnIndex}"]`
                     )
-                    element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                  }
-                }}
-              >
-                Turn {stat.turnNumber}
-              </button>
-            ))}
+                    if (turnIndex >= 0) {
+                      const element = messagesListRef.current?.querySelector(
+                        `[data-message-index="${turnIndex}"]`
+                      )
+                      element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    }
+                  }}
+                  title={stat.model}
+                >
+                  <span className="turn-number">{stat.turnNumber}</span>
+                  {duration !== null && (
+                    <span className="turn-duration">{duration}s</span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}

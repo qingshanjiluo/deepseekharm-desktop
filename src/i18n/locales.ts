@@ -76,6 +76,7 @@ export interface TranslationKeys {
     dragDropFiles: string
     attachments: string
     removeAttachment: string
+    turns: string
   }
   // 斜杠命令
   slashCommands: {
@@ -265,6 +266,7 @@ const zhCN: TranslationKeys = {
     dragDropFiles: '拖放文件到此处',
     attachments: '附件',
     removeAttachment: '移除附件',
+    turns: '轮对话',
   },
   slashCommands: {
     title: '斜杠命令',
@@ -449,6 +451,7 @@ const enUS: TranslationKeys = {
     dragDropFiles: 'Drag and drop files here',
     attachments: 'Attachments',
     removeAttachment: 'Remove attachment',
+    turns: 'turns',
   },
   slashCommands: {
     title: 'Slash Commands',
@@ -633,6 +636,7 @@ const jaJP: TranslationKeys = {
     dragDropFiles: 'ファイルをここにドラッグ＆ドロップ',
     attachments: '添付ファイル',
     removeAttachment: '添付ファイルを削除',
+    turns: 'ターン',
   },
   slashCommands: {
     title: 'スラッシュコマンド',
