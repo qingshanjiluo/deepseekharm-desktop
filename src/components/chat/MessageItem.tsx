@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Message } from '../../store'
 import { MarkdownText } from './MarkdownText'
 import { ReasoningRow } from './ReasoningRow'
+import { ToolCallTree } from './ToolCallTree'
 import { useTranslation } from '../../i18n'
 import './MessageItem.css'
 
@@ -145,19 +146,7 @@ export function MessageItem({
 
         {/* 工具调用展示 */}
         {message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="tool-calls">
-            {message.toolCalls.map(tool => (
-              <div key={tool.id} className="tool-call-item">
-                <span className="tool-name">{tool.name}</span>
-                {tool.result && (
-                  <span className="tool-result">
-                    {tool.result.substring(0, 100)}
-                    {tool.result.length > 100 ? '...' : ''}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
+          <ToolCallTree toolCalls={message.toolCalls} />
         )}
       </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { ToolCall } from '../../store'
+import { getToolView } from './tools'
 import './ToolCallTree.css'
 
 interface ToolCallTreeProps {
@@ -52,8 +53,6 @@ interface ToolCallItemProps {
 }
 
 function ToolCallItem({ tool, isExpanded, onToggle }: ToolCallItemProps) {
-  const [showResult, setShowResult] = useState(true)
-
   // 解析参数
   let parsedArgs: Record<string, any> = {}
   try {
@@ -104,6 +103,9 @@ function ToolCallItem({ tool, isExpanded, onToggle }: ToolCallItemProps) {
     )
   }
 
+  // 尝试获取专用工具视图
+  const specializedView = getToolView(tool)
+
   return (
     <div className={`tool-call-item ${isExpanded ? 'expanded' : ''}`}>
       <div className="tool-header" onClick={onToggle}>
@@ -132,40 +134,36 @@ function ToolCallItem({ tool, isExpanded, onToggle }: ToolCallItemProps) {
       
       {isExpanded && (
         <div className="tool-details">
-          {/* 参数 */}
-          <div className="tool-section">
-            <div className="section-header">
-              <span className="section-label">参数</span>
-            </div>
-            <pre className="code-block">
-              {JSON.stringify(parsedArgs, null, 2)}
-            </pre>
-          </div>
-
-          {/* 结果 */}
-          {tool.result && (
-            <div className="tool-section">
-              <div className="section-header">
-                <span className="section-label">结果</span>
-                <button 
-                  className="toggle-result-btn"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowResult(!showResult)
-                  }}
-                >
-                  {showResult ? '隐藏' : '显示'}
-                </button>
-              </div>
-              {showResult && (
-                <pre className="code-block result">
-                  {tool.result.length > 500 
-                    ? tool.result.substring(0, 500) + '\n...'
-                    : tool.result
-                  }
+          {/* 优先使用专用视图 */}
+          {specializedView ? (
+            specializedView
+          ) : (
+            <>
+              {/* 参数 */}
+              <div className="tool-section">
+                <div className="section-header">
+                  <span className="section-label">参数</span>
+                </div>
+                <pre className="code-block">
+                  {JSON.stringify(parsedArgs, null, 2)}
                 </pre>
+              </div>
+
+              {/* 结果 */}
+              {tool.result && (
+                <div className="tool-section">
+                  <div className="section-header">
+                    <span className="section-label">结果</span>
+                  </div>
+                  <pre className="code-block result">
+                    {tool.result.length > 500 
+                      ? tool.result.substring(0, 500) + '\n...'
+                      : tool.result
+                    }
+                  </pre>
+                </div>
               )}
-            </div>
+            </>
           )}
         </div>
       )}

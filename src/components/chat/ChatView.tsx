@@ -3,6 +3,8 @@ import { useAppStore, Message } from '../../store'
 import { MessageItem } from './MessageItem'
 import { AttachmentButton } from './AttachmentButton'
 import { SlashCommandMenu } from './SlashCommandMenu'
+import { ContextMeter } from './ContextMeter'
+import { DropOverlay } from './DropOverlay'
 import type { SlashCommand } from './SlashCommandMenu'
 import { SettingsModal } from '../settings/SettingsModal'
 import { ModelSelector } from '../model/ModelSelector'
@@ -57,6 +59,8 @@ export function ChatView() {
   const [showKnowledge, setShowKnowledge] = useState(false)
   const [activeTurn, setActiveTurn] = useState<number | null>(null)
   const [version, setVersion] = useState('v1.0.0')
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounterRef = useRef(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesListRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -392,6 +396,42 @@ export function ChatView() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // 拖放处理
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current++
+    if (e.dataTransfer.types.includes('Files')) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current--
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    dragCounterRef.current = 0
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) {
+      handleAddAttachments(files)
+    }
+  }
+
   return (
     <div className="chat-view">
       {/* 头部 */}
@@ -468,6 +508,7 @@ export function ChatView() {
               <IconZap size={12} />
               {totalTokenUsage.toLocaleString()} tokens
             </span>
+            <ContextMeter />
           </div>
           <div className="turn-list">
             {turnStats.map((stat) => {
@@ -509,7 +550,16 @@ export function ChatView() {
       )}
 
       {/* 消息列表 */}
-      <div className="messages-container pointer-scrollbar" ref={messagesListRef}>
+      <div 
+        className="messages-container pointer-scrollbar" 
+        ref={messagesListRef}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        style={{ position: 'relative' }}
+      >
+        <DropOverlay isDragging={isDragging} />
         {!currentSession || currentSession.messages.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">
