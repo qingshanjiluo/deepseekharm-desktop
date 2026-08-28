@@ -81,13 +81,37 @@ export class TrayManager {
   }
 
   private createPlaceholderIcon(): nativeImage {
-    // 创建一个简单的16x16图标
     const size = 16
-    const image = nativeImage.createEmpty()
-    
-    // 在实际应用中，这里应该加载真实的图标文件
-    // 目前返回一个空图标
-    return image
+    // 创建一个 16x16 的绿色圆形托盘图标
+    const data = Buffer.alloc(size * size * 4)
+    const center = size / 2
+    const radius = 6
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const dx = x - center
+        const dy = y - center
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const idx = (y * size + x) * 4
+        if (dist <= radius) {
+          data[idx] = 34      // R
+          data[idx + 1] = 197 // G
+          data[idx + 2] = 94  // B
+          data[idx + 3] = 255 // A
+        } else if (dist <= radius + 1) {
+          // 抗锯齿边缘
+          const alpha = Math.max(0, 255 - (dist - radius) * 255)
+          data[idx] = 34
+          data[idx + 1] = 197
+          data[idx + 2] = 94
+          data[idx + 3] = alpha
+        } else {
+          data[idx + 3] = 0
+        }
+      }
+    }
+
+    return nativeImage.createFromBuffer(data, { width: size, height: size })
   }
 
   updateBadge(text: string): void {

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Message } from '../../store'
 import { MarkdownText } from './MarkdownText'
 import { ReasoningRow } from './ReasoningRow'
+import { useTranslation } from '../../i18n'
 import './MessageItem.css'
 
 interface MessageItemProps {
@@ -19,6 +20,7 @@ export function MessageItem({
   onRetry,
   onEdit,
 }: MessageItemProps) {
+  const { t } = useTranslation()
   const [showActions, setShowActions] = useState(false)
   const [copied, setCopied] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -28,7 +30,6 @@ export function MessageItem({
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
 
-  // 复制消息
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content)
     setCopied(true)
@@ -36,13 +37,11 @@ export function MessageItem({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // 开始编辑
   const handleStartEdit = () => {
     setEditContent(message.content)
     setIsEditing(true)
   }
 
-  // 完成编辑
   const handleFinishEdit = () => {
     if (editContent.trim() && editContent !== message.content) {
       onEdit?.(editContent)
@@ -50,13 +49,11 @@ export function MessageItem({
     setIsEditing(false)
   }
 
-  // 取消编辑
   const handleCancelEdit = () => {
     setIsEditing(false)
     setEditContent(message.content)
   }
 
-  // 反馈
   const handleFeedback = (type: 'positive' | 'negative') => {
     setFeedback(feedback === type ? null : type)
   }
@@ -87,7 +84,7 @@ export function MessageItem({
       <div className="message-body">
         <div className="message-header">
           <span className="message-role">
-            {isUser ? '你' : 'DeepSeek'}
+            {isUser ? t.chat.send : 'DeepSeek'}
           </span>
           <span className="message-time">
             {new Date(message.timestamp).toLocaleTimeString('zh-CN', {
@@ -108,10 +105,10 @@ export function MessageItem({
               />
               <div className="edit-actions">
                 <button className="edit-btn cancel" onClick={handleCancelEdit}>
-                  取消
+                  {t.common.cancel}
                 </button>
                 <button className="edit-btn save" onClick={handleFinishEdit}>
-                  保存
+                  {t.common.save}
                 </button>
               </div>
             </div>
@@ -170,7 +167,7 @@ export function MessageItem({
           <button 
             className="action-btn"
             onClick={handleCopy}
-            title={copied ? '已复制' : '复制'}
+            title={copied ? t.common.success : t.common.copy}
           >
             {copied ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -187,7 +184,7 @@ export function MessageItem({
             <button 
               className="action-btn"
               onClick={handleStartEdit}
-              title="编辑"
+              title={t.common.edit}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -200,7 +197,7 @@ export function MessageItem({
               <button 
                 className={`action-btn ${feedback === 'positive' ? 'active' : ''}`}
                 onClick={() => handleFeedback('positive')}
-                title="点赞"
+                title={t.common.confirm}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill={feedback === 'positive' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                   <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
@@ -209,7 +206,7 @@ export function MessageItem({
               <button 
                 className={`action-btn ${feedback === 'negative' ? 'active negative' : ''}`}
                 onClick={() => handleFeedback('negative')}
-                title="点踩"
+                title={t.common.cancel}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill={feedback === 'negative' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                   <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
@@ -218,7 +215,7 @@ export function MessageItem({
               <button 
                 className="action-btn"
                 onClick={onRetry}
-                title="重新生成"
+                title={t.chat.regenerate}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="23 4 23 10 17 10"/>
@@ -227,7 +224,7 @@ export function MessageItem({
               </button>
               <button 
                 className="action-btn"
-                title="分享"
+                title={t.common.info}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="18" cy="5" r="3"/>

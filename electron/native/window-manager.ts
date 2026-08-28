@@ -8,7 +8,6 @@ import { join } from 'path'
  */
 export class WindowManager {
   private mainWindow: BrowserWindow | null = null
-  private aboutWindow: BrowserWindow | null = null
 
   createMainWindow(): BrowserWindow {
     // 获取主屏幕尺寸
@@ -73,61 +72,7 @@ export class WindowManager {
     return this.mainWindow
   }
 
-  createAboutWindow(): BrowserWindow {
-    if (this.aboutWindow) {
-      this.aboutWindow.focus()
-      return this.aboutWindow
-    }
-
-    this.aboutWindow = new BrowserWindow({
-      width: 400,
-      height: 300,
-      parent: this.mainWindow!,
-      modal: true,
-      resizable: false,
-      title: '关于 DeepSeek Harness',
-      icon: join(__dirname, '../../resources/icon.ico'),
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        sandbox: true,
-        preload: join(__dirname, '../preload/preload.js'),
-      },
-      backgroundColor: '#1e1e1e',
-    })
-
-    this.aboutWindow.on('closed', () => {
-      this.aboutWindow = null
-    })
-
-    return this.aboutWindow
-  }
-
-  createSettingsWindow(): BrowserWindow {
-    const settingsWindow = new BrowserWindow({
-      width: 600,
-      height: 500,
-      parent: this.mainWindow!,
-      modal: true,
-      resizable: false,
-      title: '设置',
-      icon: join(__dirname, '../../resources/icon.ico'),
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        sandbox: true,
-        preload: join(__dirname, '../preload/preload.js'),
-      },
-      backgroundColor: '#1e1e1e',
-    })
-
-    return settingsWindow
-  }
-
   destroyAll(): void {
-    if (this.aboutWindow && !this.aboutWindow.isDestroyed()) {
-      this.aboutWindow.close()
-    }
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.close()
     }

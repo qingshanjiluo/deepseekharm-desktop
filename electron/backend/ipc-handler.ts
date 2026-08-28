@@ -1,12 +1,19 @@
 import electron from 'electron'
-const { ipcMain, BrowserWindow, dialog, app, shell } = electron
+const { ipcMain, BrowserWindow, dialog, app } = electron
 import { join } from 'path'
 import { readFile, writeFile, readdir, stat, access, mkdir, unlink } from 'fs/promises'
 import { homedir, tmpdir } from 'os'
+import { spawn, ChildProcess } from 'child_process'
 import { CordisRuntime } from './cordis-runtime'
 
 // 存储活跃的流 AbortController
 const activeStreams = new Map<string, AbortController>()
+
+// 存储活跃的 MCP 服务器进程
+const mcpProcesses = new Map<string, ChildProcess>()
+
+// 存储 MCP 服务器的工具列表
+const mcpTools = new Map<string, Array<{ name: string; description: string; inputSchema: Record<string, unknown> }>>()
 
 /**
  * IPC处理器
@@ -229,15 +236,6 @@ export class IPCHandler {
       return tmpdir()
     })
 
-    // 外部链接
-    ipcMain.handle('shell:openExternal', async (_event, url: string) => {
-      await shell.openExternal(url)
-    })
-
-    ipcMain.handle('shell:showItemInFolder', async (_event, fullPath: string) => {
-      shell.showItemInFolder(fullPath)
-    })
-
     // 对话框
     ipcMain.handle('dialog:save', async (_event, options?: electron.SaveDialogOptions) => {
       const result = await dialog.showSaveDialog(this.mainWindow, options)
@@ -249,29 +247,173 @@ export class IPCHandler {
       return { canceled: result.canceled, filePaths: result.filePaths }
     })
 
-    // MCP 服务器管理（placeholder - 需要 child_process 实现 stdio 连接）
-    ipcMain.handle('mcp:connect', async (_event, serverId: string) => {
-      console.log('MCP connect:', serverId)
-      // TODO: 使用 child_process.spawn 启动 MCP 服务器进程
-      return { success: true }
+    // MCP 服务器管理
+    ipcMain.handle('mcp:connect', async (_event, serverId: string, config: { command: string; args?: string[]; env?: Record<string, string> }) => {
+      try {
+        // 如果已有进程，先断开
+        const existingProcess = mcpProcesses.get(serverId)
+        if (existingProcess) {
+          existingProcess.kill()
+          mcpProcesses.delete(serverId)
+        }
+
+        const proc = spawn(config.command, config.args || [], {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: { ...process.env, ...config.env },
+        })
+
+        mcpProcesses.set(serverId, proc)
+
+        // 处理 MCP JSON-RPC 响应
+        let buffer = ''
+        proc.stdout?.on('data', (data: Buffer) => {
+          buffer += data.toString()
+          // 按行分割 JSON-RPC 消息
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+          
+          for (const line of lines) {
+            try {
+              const msg = JSON.parse(line)
+              // 转发到渲染进程
+              if (!this.mainWindow.isDestroyed()) {
+                this.mainWindow.webContents.send('mcp:message', { serverId, message: msg })
+              }
+            } catch {
+              // 非 JSON 消息，忽略
+            }
+          }
+        })
+
+        proc.stderr?.on('data', (data: Buffer) => {
+          console.error(`MCP ${serverId} stderr:`, data.toString())
+        })
+
+        proc.on('error', (error) => {
+          console.error(`MCP ${serverId} error:`, error)
+          mcpProcesses.delete(serverId)
+          if (!this.mainWindow.isDestroyed()) {
+            this.mainWindow.webContents.send('mcp:error', { serverId, error: error.message })
+          }
+        })
+
+        proc.on('exit', (code) => {
+          console.log(`MCP ${serverId} exited with code ${code}`)
+          mcpProcesses.delete(serverId)
+          mcpTools.delete(serverId)
+          if (!this.mainWindow.isDestroyed()) {
+            this.mainWindow.webContents.send('mcp:disconnected', { serverId })
+          }
+        })
+
+        // 发送 initialize 请求
+        const initRequest = {
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'initialize',
+          params: {
+            protocolVersion: '2024-11-05',
+            capabilities: {},
+            clientInfo: { name: 'deepseek-harness', version: '1.0.0' },
+          },
+        }
+        proc.stdin?.write(JSON.stringify(initRequest) + '\n')
+
+        return { success: true, pid: proc.pid }
+      } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+      }
     })
 
     ipcMain.handle('mcp:disconnect', async (_event, serverId: string) => {
-      console.log('MCP disconnect:', serverId)
-      // TODO: 终止 MCP 服务器进程
+      const proc = mcpProcesses.get(serverId)
+      if (proc) {
+        // 发送 shutdown 请求
+        const shutdownRequest = {
+          jsonrpc: '2.0',
+          id: 2,
+          method: 'shutdown',
+          params: {},
+        }
+        proc.stdin?.write(JSON.stringify(shutdownRequest) + '\n')
+        
+        // 等待一小段时间后强制终止
+        setTimeout(() => {
+          if (!proc.killed) {
+            proc.kill()
+          }
+        }, 1000)
+        
+        mcpProcesses.delete(serverId)
+        mcpTools.delete(serverId)
+      }
       return { success: true }
     })
 
     ipcMain.handle('mcp:executeTool', async (_event, serverId: string, toolName: string, args: Record<string, unknown>) => {
-      console.log('MCP execute tool:', serverId, toolName, args)
-      // TODO: 通过 MCP 协议调用工具
-      throw new Error('MCP tool execution not yet implemented')
+      const proc = mcpProcesses.get(serverId)
+      if (!proc) {
+        throw new Error(`MCP server ${serverId} not connected`)
+      }
+
+      return new Promise((resolve, reject) => {
+        const requestId = Date.now()
+        
+        const request = {
+          jsonrpc: '2.0',
+          id: requestId,
+          method: 'tools/call',
+          params: { name: toolName, arguments: args },
+        }
+
+        // 监听响应
+        const onData = (data: Buffer) => {
+          const lines = data.toString().split('\n')
+          for (const line of lines) {
+            try {
+              const msg = JSON.parse(line)
+              if (msg.id === requestId) {
+                proc.stdout?.off('data', onData)
+                if (msg.error) {
+                  reject(new Error(msg.error.message || 'Tool execution failed'))
+                } else {
+                  resolve(msg.result)
+                }
+              }
+            } catch {
+              // 非 JSON 消息
+            }
+          }
+        }
+
+        proc.stdout?.on('data', onData)
+        
+        // 发送请求
+        proc.stdin?.write(JSON.stringify(request) + '\n')
+        
+        // 超时处理
+        setTimeout(() => {
+          proc.stdout?.off('data', onData)
+          reject(new Error('Tool execution timeout'))
+        }, 30000)
+      })
     })
 
     console.log('IPC handlers registered')
   }
 
   dispose(): void {
+    // 清理 MCP 进程
+    for (const [id, proc] of mcpProcesses) {
+      try {
+        proc.kill()
+      } catch (error) {
+        console.error(`Failed to kill MCP process ${id}:`, error)
+      }
+    }
+    mcpProcesses.clear()
+    mcpTools.clear()
+    
     this.runtime.dispose()
     ipcMain.removeAllListeners()
   }

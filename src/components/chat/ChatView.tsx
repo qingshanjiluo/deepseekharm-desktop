@@ -56,9 +56,14 @@ export function ChatView() {
   const [showTrajectory, setShowTrajectory] = useState(false)
   const [showKnowledge, setShowKnowledge] = useState(false)
   const [activeTurn, setActiveTurn] = useState<number | null>(null)
+  const [version, setVersion] = useState('v1.0.0')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesListRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    window.deepSeek.system.getVersion().then(v => setVersion(`v${v}`))
+  }, [])
 
   // 计算 Turn 统计
   const turnStats = useMemo(() => {
@@ -282,7 +287,7 @@ export function ChatView() {
           if (chunk.type === 'finish') {
             if (chunk.finishReason === 'abort') {
               updateMessage(sessionId, assistantMsg.id, {
-                content: fullContent || '（已停止生成）',
+                content: fullContent || t.chat.stopGeneration,
               })
             }
           }
@@ -302,13 +307,13 @@ export function ChatView() {
         // 模拟响应（开发环境）
         await new Promise(resolve => setTimeout(resolve, 500))
         updateMessage(sessionId, assistantMsg.id, {
-          content: '这是一个模拟响应。请在 Electron 环境中运行以获得完整功能。\n\n要使用真实 API，请在设置中配置您的 API Key。',
+          content: t.chat.stopGeneration,
         })
       }
     } catch (error) {
       console.error('Stream error:', error)
       updateMessage(sessionId, assistantMsg.id, {
-        content: `错误: ${error instanceof Error ? error.message : '未知错误'}\n\n请检查您的 API Key 配置是否正确。`,
+        content: `Error: ${error instanceof Error ? error.message : t.errors.unknownError}\n\n${t.errors.apiError}`,
       })
     } finally {
       setStreaming(false)
@@ -406,7 +411,7 @@ export function ChatView() {
           <button 
             className="header-btn"
             onClick={() => setShowTrajectory(true)}
-            title="轨迹视图"
+            title={t.chat.stopGeneration}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -419,7 +424,7 @@ export function ChatView() {
           <button 
             className="header-btn"
             onClick={() => setShowKnowledge(true)}
-            title="知识库"
+            title={t.common.search}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -525,7 +530,7 @@ export function ChatView() {
                   <polyline points="16 18 22 12 16 6"/>
                   <polyline points="8 6 2 12 8 18"/>
                 </svg>
-                写一个 Python 爬虫
+                {t.chat.suggestionCrawler}
               </button>
               <button 
                 className="suggestion-btn"
@@ -536,7 +541,7 @@ export function ChatView() {
                   <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
                   <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
-                解释 JavaScript 闭包
+                {t.chat.suggestionClosure}
               </button>
               <button 
                 className="suggestion-btn"
@@ -545,7 +550,7 @@ export function ChatView() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                 </svg>
-                优化代码性能
+                {t.chat.suggestionOptimize}
               </button>
             </div>
           </div>
@@ -642,7 +647,7 @@ export function ChatView() {
                   setStreaming(false)
                 }}
                 className="send-btn stop-btn"
-                title="停止生成"
+                  title={t.chat.stopGeneration}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="6" y="6" width="12" height="12" rx="2"/>
@@ -664,7 +669,7 @@ export function ChatView() {
         </div>
         
         <div className="input-hint">
-          <span>DeepSeek Harness v1.0.0</span>
+          <span>DeepSeek Harness {version}</span>
           <span className="hint-separator">•</span>
           <span>{settings.model}</span>
           {totalTokenUsage > 0 && (

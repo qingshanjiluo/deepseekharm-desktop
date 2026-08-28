@@ -171,16 +171,16 @@
 }
 
 .status-dot.connected {
-  background: #22c55e;
+  background: var(--color-success);
 }
 
 .status-dot.connecting {
-  background: #f59e0b;
+  background: var(--color-warning);
   animation: pulse 1s infinite;
 }
 
 .status-dot.error {
-  background: #ef4444;
+  background: var(--color-error);
 }
 
 @keyframes pulse {
@@ -265,7 +265,7 @@
 }
 
 .btn-connect {
-  background: #22c55e;
+  background: var(--color-success);
   color: white;
 }
 
@@ -276,7 +276,7 @@
 
 .btn-delete {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .detail-section {
@@ -310,7 +310,7 @@
 }
 
 .config-item.error .config-value {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .tools-list {
