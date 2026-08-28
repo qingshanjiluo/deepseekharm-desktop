@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAppStore } from '../../store'
+import { useTranslation, localeNames, Locale } from '../../i18n'
 import './SettingsModal.css'
 
 interface SettingsModalProps {
@@ -11,6 +12,7 @@ type SettingsTab = 'general' | 'models' | 'appearance' | 'shortcuts'
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { settings, updateSettings } = useAppStore()
+  const { t, locale, setLocale } = useTranslation()
   const [activeTab, setActiveTab] = useState<SettingsTab>('general')
 
   if (!isOpen) return null
@@ -18,7 +20,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     {
       id: 'general',
-      label: '通用',
+      label: t.settings.general,
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="3"/>
@@ -28,7 +30,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     },
     {
       id: 'models',
-      label: '模型',
+      label: t.settings.models,
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -39,7 +41,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     },
     {
       id: 'appearance',
-      label: '外观',
+      label: t.settings.appearance,
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="5"/>
@@ -56,7 +58,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     },
     {
       id: 'shortcuts',
-      label: '快捷键',
+      label: t.settings.shortcuts,
       icon: (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/>
@@ -78,7 +80,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
         {/* 头部 */}
         <div className="settings-header">
-          <h2 className="settings-title">设置</h2>
+          <h2 className="settings-title">{t.settings.title}</h2>
           <button className="close-btn" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"/>
@@ -105,16 +107,22 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           {/* 内容区 */}
           <div className="settings-content">
             {activeTab === 'general' && (
-              <GeneralSettings settings={settings} onUpdate={updateSettings} />
+              <GeneralSettings 
+                settings={settings} 
+                onUpdate={updateSettings}
+                t={t}
+                locale={locale}
+                setLocale={setLocale}
+              />
             )}
             {activeTab === 'models' && (
-              <ModelSettings settings={settings} onUpdate={updateSettings} />
+              <ModelSettings settings={settings} onUpdate={updateSettings} t={t} />
             )}
             {activeTab === 'appearance' && (
-              <AppearanceSettings settings={settings} onUpdate={updateSettings} />
+              <AppearanceSettings settings={settings} onUpdate={updateSettings} t={t} />
             )}
             {activeTab === 'shortcuts' && (
-              <ShortcutSettings />
+              <ShortcutSettings t={t} />
             )}
           </div>
         </div>
@@ -126,19 +134,44 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 // 通用设置
 function GeneralSettings({ 
   settings, 
-  onUpdate 
+  onUpdate,
+  t,
+  locale,
+  setLocale
 }: { 
   settings: any
-  onUpdate: (updates: any) => void 
+  onUpdate: (updates: any) => void
+  t: any
+  locale: Locale
+  setLocale: (locale: Locale) => void
 }) {
   return (
     <div className="settings-section">
-      <h3 className="section-title">通用设置</h3>
+      <h3 className="section-title">{t.settings.general}</h3>
       
+      {/* 语言设置 */}
+      <div className="setting-item vertical">
+        <div className="setting-label">
+          <span className="label-text">{t.settings.language}</span>
+          <span className="label-desc">{t.settings.languageDesc}</span>
+        </div>
+        <div className="locale-options">
+          {(['zh-CN', 'en-US', 'ja-JP'] as Locale[]).map((loc) => (
+            <button
+              key={loc}
+              className={`locale-btn ${locale === loc ? 'active' : ''}`}
+              onClick={() => setLocale(loc)}
+            >
+              {localeNames[loc]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="setting-item">
         <div className="setting-label">
-          <span className="label-text">Enter 发送消息</span>
-          <span className="label-desc">按 Enter 键直接发送，Shift+Enter 换行</span>
+          <span className="label-text">{t.settings.enterToSend}</span>
+          <span className="label-desc">{t.settings.enterToSendDesc}</span>
         </div>
         <label className="toggle">
           <input
@@ -152,14 +185,14 @@ function GeneralSettings({
 
       <div className="setting-item">
         <div className="setting-label">
-          <span className="label-text">流式响应</span>
-          <span className="label-desc">启用实时流式输出</span>
+          <span className="label-text">{t.settings.showTokenCount}</span>
+          <span className="label-desc">{t.settings.showTokenCountDesc}</span>
         </div>
         <label className="toggle">
           <input
             type="checkbox"
-            checked={settings.streamingEnabled}
-            onChange={(e) => onUpdate({ streamingEnabled: e.target.checked })}
+            checked={settings.showTokenCount}
+            onChange={(e) => onUpdate({ showTokenCount: e.target.checked })}
           />
           <span className="toggle-slider"></span>
         </label>
@@ -167,11 +200,45 @@ function GeneralSettings({
 
       <div className="setting-item">
         <div className="setting-label">
-          <span className="label-text">自动保存会话</span>
-          <span className="label-desc">关闭时自动保存对话记录</span>
+          <span className="label-text">{t.settings.compactMode}</span>
+          <span className="label-desc">{t.settings.compactModeDesc}</span>
         </div>
         <label className="toggle">
-          <input type="checkbox" checked readOnly />
+          <input
+            type="checkbox"
+            checked={settings.compactMode}
+            onChange={(e) => onUpdate({ compactMode: e.target.checked })}
+          />
+          <span className="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div className="setting-item">
+        <div className="setting-label">
+          <span className="label-text">{t.settings.autoSave}</span>
+          <span className="label-desc">{t.settings.autoSaveDesc}</span>
+        </div>
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={settings.autoSave}
+            onChange={(e) => onUpdate({ autoSave: e.target.checked })}
+          />
+          <span className="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div className="setting-item">
+        <div className="setting-label">
+          <span className="label-text">{t.settings.sandboxMode}</span>
+          <span className="label-desc">{t.settings.sandboxModeDesc}</span>
+        </div>
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={settings.sandboxMode}
+            onChange={(e) => onUpdate({ sandboxMode: e.target.checked })}
+          />
           <span className="toggle-slider"></span>
         </label>
       </div>
@@ -182,21 +249,24 @@ function GeneralSettings({
 // 模型设置
 function ModelSettings({ 
   settings, 
-  onUpdate 
+  onUpdate,
+  t
 }: { 
   settings: any
-  onUpdate: (updates: any) => void 
+  onUpdate: (updates: any) => void
+  t: any
 }) {
   const [apiKey, setApiKey] = useState(settings.apiKey || '')
+  const [apiEndpoint, setApiEndpoint] = useState(settings.apiEndpoint || '')
 
   return (
     <div className="settings-section">
-      <h3 className="section-title">模型配置</h3>
+      <h3 className="section-title">{t.settings.models}</h3>
       
       <div className="setting-item vertical">
         <div className="setting-label">
-          <span className="label-text">API Key</span>
-          <span className="label-desc">DeepSeek API 密钥</span>
+          <span className="label-text">{t.settings.apiKey}</span>
+          <span className="label-desc">{t.settings.apiKeyDesc}</span>
         </div>
         <div className="api-key-input">
           <input
@@ -210,15 +280,37 @@ function ModelSettings({
             className="save-btn"
             onClick={() => onUpdate({ apiKey })}
           >
-            保存
+            {t.common.save}
           </button>
         </div>
       </div>
 
       <div className="setting-item vertical">
         <div className="setting-label">
-          <span className="label-text">模型</span>
-          <span className="label-desc">选择使用的 AI 模型</span>
+          <span className="label-text">{t.settings.apiEndpoint}</span>
+          <span className="label-desc">{t.settings.apiEndpointDesc}</span>
+        </div>
+        <div className="api-key-input">
+          <input
+            type="text"
+            value={apiEndpoint}
+            onChange={(e) => setApiEndpoint(e.target.value)}
+            placeholder="https://api.deepseek.com"
+            className="text-input"
+          />
+          <button 
+            className="save-btn"
+            onClick={() => onUpdate({ apiEndpoint })}
+          >
+            {t.common.save}
+          </button>
+        </div>
+      </div>
+
+      <div className="setting-item vertical">
+        <div className="setting-label">
+          <span className="label-text">{t.settings.defaultModel}</span>
+          <span className="label-desc">{t.settings.defaultModelDesc}</span>
         </div>
         <select
           value={settings.model}
@@ -233,8 +325,8 @@ function ModelSettings({
 
       <div className="setting-item vertical">
         <div className="setting-label">
-          <span className="label-text">提供者</span>
-          <span className="label-desc">API 服务提供者</span>
+          <span className="label-text">{t.settings.defaultModel.replace('默认', '')}</span>
+          <span className="label-desc">{t.settings.apiEndpointDesc}</span>
         </div>
         <select
           value={settings.provider}
@@ -253,19 +345,21 @@ function ModelSettings({
 // 外观设置
 function AppearanceSettings({ 
   settings, 
-  onUpdate 
+  onUpdate,
+  t
 }: { 
   settings: any
-  onUpdate: (updates: any) => void 
+  onUpdate: (updates: any) => void
+  t: any
 }) {
   return (
     <div className="settings-section">
-      <h3 className="section-title">外观设置</h3>
+      <h3 className="section-title">{t.settings.appearance}</h3>
       
       <div className="setting-item vertical">
         <div className="setting-label">
-          <span className="label-text">主题</span>
-          <span className="label-desc">选择应用主题</span>
+          <span className="label-text">{t.settings.theme}</span>
+          <span className="label-desc">{t.settings.themeDesc}</span>
         </div>
         <div className="theme-options">
           {(['dark', 'light', 'system'] as const).map((theme) => (
@@ -274,12 +368,27 @@ function AppearanceSettings({
               className={`theme-btn ${settings.theme === theme ? 'active' : ''}`}
               onClick={() => onUpdate({ theme })}
             >
-              {theme === 'dark' && '深色'}
-              {theme === 'light' && '浅色'}
-              {theme === 'system' && '跟随系统'}
+              {theme === 'dark' && t.settings.darkTheme}
+              {theme === 'light' && t.settings.lightTheme}
+              {theme === 'system' && t.settings.systemTheme}
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="setting-item">
+        <div className="setting-label">
+          <span className="label-text">{t.settings.fontSize}</span>
+          <span className="label-desc">{settings.fontSize}px</span>
+        </div>
+        <input
+          type="range"
+          min="12"
+          max="18"
+          value={settings.fontSize}
+          onChange={(e) => onUpdate({ fontSize: parseInt(e.target.value) })}
+          className="range-input"
+        />
       </div>
 
       <div className="setting-item">
@@ -316,20 +425,22 @@ function AppearanceSettings({
 }
 
 // 快捷键设置
-function ShortcutSettings() {
+function ShortcutSettings({ t }: { t: any }) {
   const shortcuts = [
-    { name: '发送消息', keys: 'Enter' },
+    { name: t.settings.sendMessage, keys: 'Enter' },
     { name: '换行', keys: 'Shift + Enter' },
-    { name: '新建会话', keys: 'Ctrl + N' },
-    { name: '搜索会话', keys: 'Ctrl + F' },
-    { name: '切换侧边栏', keys: 'Ctrl + B' },
-    { name: '打开设置', keys: 'Ctrl + ,' },
+    { name: t.settings.newChat, keys: 'Ctrl + N' },
+    { name: t.settings.search, keys: 'Ctrl + F' },
+    { name: t.settings.toggleSidebar, keys: 'Ctrl + B' },
+    { name: t.settings.toggleDetails, keys: 'Ctrl + .' },
+    { name: t.settings.focusInput, keys: 'Ctrl + /' },
+    { name: t.settings.stopGeneration, keys: 'Ctrl + Shift + S' },
     { name: '复制最后响应', keys: 'Ctrl + Shift + C' },
   ]
 
   return (
     <div className="settings-section">
-      <h3 className="section-title">快捷键</h3>
+      <h3 className="section-title">{t.settings.keyboardShortcuts}</h3>
       
       <div className="shortcuts-list">
         {shortcuts.map((shortcut) => (

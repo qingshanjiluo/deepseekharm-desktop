@@ -6,6 +6,8 @@ import { SlashCommandMenu } from './SlashCommandMenu'
 import type { SlashCommand } from './SlashCommandMenu'
 import { SettingsModal } from '../settings/SettingsModal'
 import { ModelSelector } from '../model/ModelSelector'
+import { TrajectoryView } from '../trajectory/TrajectoryView'
+import { useTranslation } from '../../i18n'
 import './ChatView.css'
 
 interface Attachment {
@@ -28,6 +30,7 @@ export function ChatView() {
     createSession,
     updateSession,
   } = useAppStore()
+  const { t } = useTranslation()
   
   const currentSession = useAppStore(state =>
     state.sessions.find(s => s.id === state.currentSessionId)
@@ -38,6 +41,7 @@ export function ChatView() {
   const [showSlashMenu, setShowSlashMenu] = useState(false)
   const [slashQuery, setSlashQuery] = useState('')
   const [showSettings, setShowSettings] = useState(false)
+  const [showTrajectory, setShowTrajectory] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -101,7 +105,7 @@ export function ChatView() {
     
     const content = currentSession.messages
       .map((msg) => {
-        const role = msg.role === 'user' ? '**你**' : '**DeepSeek**'
+        const role = msg.role === 'user' ? `**${t.sidebar.untitledSession}**` : '**DeepSeek**'
         return `### ${role}\n\n${msg.content}`
       })
       .join('\n\n---\n\n')
@@ -110,7 +114,7 @@ export function ChatView() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${currentSession.name || '会话'}.md`
+    a.download = `${currentSession.name || t.sidebar.untitledSession}.md`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -265,14 +269,27 @@ export function ChatView() {
           </svg>
         </button>
         <div className="header-info">
-          <h2 className="session-title">{currentSession?.name || '新会话'}</h2>
+          <h2 className="session-title">{currentSession?.name || t.sidebar.untitledSession}</h2>
           <ModelSelector compact />
         </div>
         <div className="header-actions">
           <button 
             className="header-btn"
+            onClick={() => setShowTrajectory(true)}
+            title="轨迹视图"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </button>
+          <button 
+            className="header-btn"
             onClick={() => setShowSettings(true)}
-            title="设置"
+            title={t.settings.title}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3"/>
@@ -284,7 +301,7 @@ export function ChatView() {
             onClick={() => useAppStore.getState().updateSettings({ 
               detailsCollapsed: !settings.detailsCollapsed 
             })}
-            title="切换详情面板"
+            title={t.settings.toggleDetails}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -305,8 +322,8 @@ export function ChatView() {
                 <path d="M2 12l10 5 10-5"/>
               </svg>
             </div>
-            <h3>开始新的对话</h3>
-            <p>输入消息开始与 DeepSeek 交流</p>
+            <h3>{t.chat.startConversation}</h3>
+            <p>{t.chat.inputPlaceholder}</p>
             <div className="suggestions">
               <button 
                 className="suggestion-btn"
@@ -394,7 +411,7 @@ export function ChatView() {
                 }
                 input.click()
               }}
-              title="添加附件"
+              title={t.chat.attachments}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
@@ -408,7 +425,7 @@ export function ChatView() {
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="输入消息... (Enter 发送, Shift+Enter 换行, / 斜杠命令)"
+                placeholder={t.chat.inputPlaceholder}
                 disabled={isStreaming}
                 rows={1}
                 className="message-input"
@@ -441,6 +458,12 @@ export function ChatView() {
           <span>{settings.model}</span>
         </div>
       </div>
+
+      {/* 轨迹视图弹窗 */}
+      <TrajectoryView 
+        isOpen={showTrajectory} 
+        onClose={() => setShowTrajectory(false)} 
+      />
 
       {/* 设置弹窗 */}
       <SettingsModal 

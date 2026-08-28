@@ -41,15 +41,22 @@ export interface Settings {
   provider: string
   model: string
   apiKey: string
+  apiEndpoint: string
   // 界面设置
   sidebarWidth: number
   detailsWidth: number
   sidebarCollapsed: boolean
   detailsCollapsed: boolean
   theme: 'dark' | 'light' | 'system'
+  locale: 'zh-CN' | 'en-US' | 'ja-JP'
+  fontSize: number
   // 行为设置
   enterToSend: boolean
   streamingEnabled: boolean
+  showTokenCount: boolean
+  compactMode: boolean
+  autoSave: boolean
+  sandboxMode: boolean
 }
 
 // Store 状态
@@ -91,13 +98,20 @@ const defaultSettings: Settings = {
   provider: 'deepseek',
   model: 'deepseek-chat',
   apiKey: '',
+  apiEndpoint: '',
   sidebarWidth: 260,
   detailsWidth: 300,
   sidebarCollapsed: false,
   detailsCollapsed: true,
   theme: 'dark',
+  locale: 'zh-CN',
+  fontSize: 14,
   enterToSend: true,
   streamingEnabled: true,
+  showTokenCount: true,
+  compactMode: false,
+  autoSave: true,
+  sandboxMode: false,
 }
 
 export const useAppStore = create<AppState>()(

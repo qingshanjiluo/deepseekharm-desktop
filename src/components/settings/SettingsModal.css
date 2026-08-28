@@ -321,12 +321,14 @@
 }
 
 /* 主题选项 */
-.theme-options {
+.theme-options,
+.locale-options {
   display: flex;
   gap: 8px;
 }
 
-.theme-btn {
+.theme-btn,
+.locale-btn {
   padding: 8px 16px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -337,12 +339,14 @@
   transition: all 0.15s ease;
 }
 
-.theme-btn:hover {
+.theme-btn:hover,
+.locale-btn:hover {
   background: rgba(255, 255, 255, 0.06);
   color: #e2e8f0;
 }
 
-.theme-btn.active {
+.theme-btn.active,
+.locale-btn.active {
   background: rgba(99, 102, 241, 0.15);
   border-color: rgba(99, 102, 241, 0.3);
   color: #a5b4fc;
