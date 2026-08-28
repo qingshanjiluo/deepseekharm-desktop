@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Message } from '../../store'
 import { MarkdownText } from './MarkdownText'
+import { ReasoningRow } from './ReasoningRow'
 import './MessageItem.css'
 
 interface MessageItemProps {
@@ -119,7 +120,12 @@ export function MessageItem({
               {isUser ? (
                 <div className="user-message">{message.content}</div>
               ) : (
-                <MarkdownText content={message.content} />
+                <>
+                  {message.reasoning && (
+                    <ReasoningRow text={message.reasoning} running={isStreaming} />
+                  )}
+                  <MarkdownText content={message.content} />
+                </>
               )}
               {isStreaming && isAssistant && (
                 <span className="cursor-blink">|</span>

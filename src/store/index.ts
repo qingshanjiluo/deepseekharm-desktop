@@ -19,6 +19,8 @@ export interface Message {
   timestamp: number
   // 工具调用相关
   toolCalls?: ToolCall[]
+  // 推理过程（Think/Reasoning）
+  reasoning?: string
   // Token 统计
   usage?: {
     promptTokens: number
