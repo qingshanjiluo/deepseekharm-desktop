@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '../../store'
 import { useTranslation } from '../../i18n'
 import { usePointerScrollbar } from '../../hooks'
-import { FishLogo } from '../icons/BrandIcons'
+import { FishLogoGlow } from '../icons/BrandIcons'
 import { IconSearch, IconPlus, IconSettings, IconChevronLeft, IconChevronRight, IconEdit, IconTrash, IconFile } from '../icons'
 import './Sidebar.css'
 
@@ -101,7 +101,7 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
         {wide && (
           <button className="brand-btn" onClick={handleCreateSession}>
             <span className="brand-icon">
-              <FishLogo size={24} />
+              <FishLogoGlow size={24} />
             </span>
             <span className="brand-name">DeepSeek Harness</span>
           </button>
@@ -109,7 +109,7 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
         <button className="toggle-btn" onClick={toggleSidebar} title={settings.sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'}>
           {!wide && (
             <span className="rail-mark">
-              <FishLogo size={20} />
+              <FishLogoGlow size={20} />
             </span>
           )}
           {settings.sidebarCollapsed ? (
