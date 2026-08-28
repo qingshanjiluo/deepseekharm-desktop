@@ -403,3 +403,71 @@
     justify-content: center;
   }
 }
+
+/* 数据管理 */
+.data-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.data-info p {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.data-hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.data-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-export, .btn-import {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s ease;
+}
+
+.btn-export {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.btn-import {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.btn-export:hover, .btn-import:hover {
+  opacity: 0.9;
+}
+
+.btn-export:disabled, .btn-import:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.data-status {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.data-status.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.data-status.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}

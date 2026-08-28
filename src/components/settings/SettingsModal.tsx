@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAppStore } from '../../store'
 import { useTranslation, localeNames, Locale } from '../../i18n'
+import { storageService } from '../../backend/storage-service'
 import './SettingsModal.css'
 
 interface SettingsModalProps {
@@ -8,7 +9,7 @@ interface SettingsModalProps {
   onClose: () => void
 }
 
-type SettingsTab = 'general' | 'models' | 'appearance' | 'shortcuts'
+type SettingsTab = 'general' | 'models' | 'appearance' | 'shortcuts' | 'data'
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { settings, updateSettings } = useAppStore()
@@ -73,6 +74,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </svg>
       ),
     },
+    {
+      id: 'data',
+      label: '数据管理',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      ),
+    },
   ]
 
   return (
@@ -123,6 +135,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             )}
             {activeTab === 'shortcuts' && (
               <ShortcutSettings t={t} />
+            )}
+            {activeTab === 'data' && (
+              <DataSettings t={t} />
             )}
           </div>
         </div>
@@ -449,6 +464,105 @@ function ShortcutSettings({ t }: { t: any }) {
             <kbd className="shortcut-keys">{shortcut.keys}</kbd>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// 数据管理设置
+function DataSettings({ t }: { t: ReturnType<typeof useTranslation>['t'] }) {
+  const { sessions, deleteSession } = useAppStore()
+  const [isExporting, setIsExporting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [statusMsg, setStatusMsg] = useState('')
+
+  const handleExportAll = async () => {
+    setIsExporting(true)
+    setStatus('idle')
+    try {
+      const sessionIds = sessions.map(s => s.id)
+      const messageStore = useAppStore.getState().messages || {}
+      const data = await storageService.exportSessions(sessionIds, sessions, messageStore)
+      const success = await storageService.exportToFile(data)
+      if (success) {
+        setStatus('success')
+        setStatusMsg(`已导出 ${sessions.length} 个会话`)
+      }
+    } catch (error) {
+      setStatus('error')
+      setStatusMsg('导出失败: ' + (error instanceof Error ? error.message : '未知错误'))
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleImport = async () => {
+    setIsImporting(true)
+    setStatus('idle')
+    try {
+      const data = await storageService.importFromFile()
+      if (!data) {
+        setIsImporting(false)
+        return
+      }
+      
+      const result = await storageService.importSessions(data)
+      
+      // 合并导入的数据
+      const { addSession, updateSession } = useAppStore.getState()
+      
+      for (const session of result.sessions) {
+        const existing = sessions.find(s => s.id === session.id)
+        if (!existing) {
+          addSession()
+          updateSession(session.id, session)
+        }
+      }
+      
+      setStatus('success')
+      setStatusMsg(`已导入 ${result.sessions.length} 个会话`)
+    } catch (error) {
+      setStatus('error')
+      setStatusMsg('导入失败: ' + (error instanceof Error ? error.message : '未知错误'))
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  return (
+    <div className="settings-section">
+      <h3 className="section-title">数据管理</h3>
+      
+      <div className="data-section">
+        <div className="data-info">
+          <p>当前共有 <strong>{sessions.length}</strong> 个会话</p>
+          <p className="data-hint">导出会话数据可用于备份或迁移到其他设备</p>
+        </div>
+
+        <div className="data-actions">
+          <button 
+            className="btn-export"
+            onClick={handleExportAll}
+            disabled={isExporting || sessions.length === 0}
+          >
+            {isExporting ? '导出中...' : '导出所有会话'}
+          </button>
+
+          <button 
+            className="btn-import"
+            onClick={handleImport}
+            disabled={isImporting}
+          >
+            {isImporting ? '导入中...' : '导入会话'}
+          </button>
+        </div>
+
+        {status !== 'idle' && (
+          <div className={`data-status ${status}`}>
+            {status === 'success' ? '✓ ' : '✗ '}{statusMsg}
+          </div>
+        )}
       </div>
     </div>
   )
