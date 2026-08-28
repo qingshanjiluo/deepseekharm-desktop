@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { AppFrame } from './components/layout/AppFrame'
 import { ChatView } from './components/chat/ChatView'
+import { ToastProvider } from './components/common/Toast'
 import { useAppStore } from './store'
 import { useKeyboardShortcuts } from './hooks'
+import './components/common/Toast.css'
 import './App.css'
 
 // 声明全局API类型
@@ -86,44 +88,46 @@ function App() {
   }
 
   return (
-    <div className="app" data-theme={settings.theme}>
-      {/* 自定义标题栏 (仅 Windows) */}
-      {platform === 'win32' && (
-        <div className="titlebar">
-          <div className="titlebar-title">
-            <svg className="titlebar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
-            <span>DeepSeek Harness</span>
+    <ToastProvider>
+      <div className="app" data-theme={settings.theme}>
+        {/* 自定义标题栏 (仅 Windows) */}
+        {platform === 'win32' && (
+          <div className="titlebar">
+            <div className="titlebar-title">
+              <svg className="titlebar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+              <span>DeepSeek Harness</span>
+            </div>
+            <div className="titlebar-controls">
+              <button className="titlebar-btn" onClick={handleMinimize}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </button>
+              <button className="titlebar-btn maximize" onClick={handleMaximize}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                </svg>
+              </button>
+              <button className="titlebar-btn close" onClick={handleClose}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
           </div>
-          <div className="titlebar-controls">
-            <button className="titlebar-btn" onClick={handleMinimize}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-            </button>
-            <button className="titlebar-btn maximize" onClick={handleMaximize}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              </svg>
-            </button>
-            <button className="titlebar-btn close" onClick={handleClose}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
-      {/* 主框架 */}
-      <AppFrame>
-        <ChatView />
-      </AppFrame>
-    </div>
+        {/* 主框架 */}
+        <AppFrame>
+          <ChatView />
+        </AppFrame>
+      </div>
+    </ToastProvider>
   )
 }
 
