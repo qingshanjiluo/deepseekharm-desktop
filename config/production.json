@@ -1,0 +1,23 @@
+# 生产环境配置
+{
+  "production": {
+    "webServer": {
+      "host": "127.0.0.1",
+      "port": 0,
+      "compression": true
+    },
+    "llm": {
+      "provider": "deepseek",
+      "model": "deepseek-chat"
+    },
+    "sandbox": {
+      "mode": "read-only"
+    },
+    "logging": {
+      "level": "warn"
+    },
+    "autoUpdate": {
+      "enabled": true
+    }
+  }
+}

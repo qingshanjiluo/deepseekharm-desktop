@@ -5,10 +5,14 @@
   "main": "dist-electron/main.js",
   "author": "DeepSeek AI",
   "license": "MIT",
-  "homepage": "https://github.com/deepseek-ai/deepseek-harness",
+  "homepage": "https://github.com/qingshanjiluo/deepseekharm-desktop",
   "repository": {
     "type": "git",
-    "url": "https://github.com/deepseek-ai/deepseek-harness.git"
+    "url": "https://github.com/qingshanjiluo/deepseekharm-desktop.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   },
   "scripts": {
     "dev": "electron-vite dev",
@@ -16,9 +20,17 @@
     "preview": "electron-vite preview",
     "package": "electron-vite build && electron-builder --win",
     "package:dir": "electron-vite build && electron-builder --win --dir",
+    "package:portable": "electron-vite build && electron-builder --win portable",
+    "package:nsis": "electron-vite build && electron-builder --win nsis",
+    "postinstall": "electron-builder install-app-deps",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "typecheck": "tsc --noEmit",
-    "start": "electron-vite preview"
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
+    "start": "electron-vite preview",
+    "clean": "rimraf dist dist-electron release",
+    "prebuild": "pnpm clean"
   },
   "dependencies": {
     "electron-store": "^8.1.0",
@@ -27,14 +39,19 @@
   "devDependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
-    "@electron-vite/backend": "^2.0.0",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
     "@vitejs/plugin-react": "^4.2.0",
     "electron": "^30.0.0",
     "electron-builder": "^24.9.0",
     "electron-vite": "^2.0.0",
+    "eslint": "^8.54.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "rimraf": "^5.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.3.0",
@@ -43,12 +60,19 @@
   "build": {
     "appId": "com.deepseek.harness.desktop",
     "productName": "DeepSeek Harness",
+    "copyright": "Copyright © 2024 DeepSeek AI",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist-electron/**/*",
       "dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/",
+        "to": "resources"
+      }
     ],
     "win": {
       "target": [
@@ -61,7 +85,8 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "resources/icon.ico"
+      "icon": "resources/icon.ico",
+      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -73,10 +98,18 @@
       "installerIcon": "resources/icon.ico",
       "uninstallerIcon": "resources/icon.ico",
       "installerHeaderIcon": "resources/icon.ico",
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "license": "LICENSE",
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true
     },
     "portable": {
-      "artifactName": "${productName}-${version}-portable.exe"
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "qingshanjiluo",
+      "repo": "deepseekharm-desktop"
     }
   }
 }
