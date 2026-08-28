@@ -250,32 +250,62 @@ export function ChatView() {
         })
 
         let fullContent = ''
+        let reasoningContent = ''
+        
         for await (const chunk of stream) {
           if (chunk.type === 'text-delta' && chunk.delta) {
             fullContent += chunk.delta
             updateMessage(sessionId, assistantMsg.id, { content: fullContent })
           }
+          
+          // 处理推理内容（DeepSeek Reasoner）
+          if (chunk.type === 'reasoning-delta' && chunk.delta) {
+            reasoningContent += chunk.delta
+            updateMessage(sessionId, assistantMsg.id, { reasoning: reasoningContent })
+          }
+          
+          // 处理使用量统计
+          if (chunk.type === 'usage' && chunk.usage) {
+            updateMessage(sessionId, assistantMsg.id, {
+              usage: {
+                promptTokens: chunk.usage.inputTokens,
+                completionTokens: chunk.usage.outputTokens,
+                totalTokens: chunk.usage.inputTokens + chunk.usage.outputTokens,
+              }
+            })
+          }
+          
+          // 处理完成
+          if (chunk.type === 'finish') {
+            if (chunk.finishReason === 'abort') {
+              updateMessage(sessionId, assistantMsg.id, {
+                content: fullContent || '（已停止生成）',
+              })
+            }
+          }
         }
 
-        // 更新 Token 统计
-        updateMessage(sessionId, assistantMsg.id, {
-          usage: {
-            promptTokens: Math.floor(content.length * 1.5),
-            completionTokens: Math.floor(fullContent.length * 1.5),
-            totalTokens: Math.floor((content.length + fullContent.length) * 1.5),
-          }
-        })
+        // 如果没有收到 usage，使用估算值
+        if (!fullContent.includes('tokens')) {
+          updateMessage(sessionId, assistantMsg.id, {
+            usage: {
+              promptTokens: Math.floor(content.length * 1.5),
+              completionTokens: Math.floor(fullContent.length * 1.5),
+              totalTokens: Math.floor((content.length + fullContent.length) * 1.5),
+            }
+          })
+        }
       } else {
-        // 模拟响应
+        // 模拟响应（开发环境）
         await new Promise(resolve => setTimeout(resolve, 500))
         updateMessage(sessionId, assistantMsg.id, {
-          content: '这是一个模拟响应。请在 Electron 环境中运行以获得完整功能。',
+          content: '这是一个模拟响应。请在 Electron 环境中运行以获得完整功能。\n\n要使用真实 API，请在设置中配置您的 API Key。',
         })
       }
     } catch (error) {
       console.error('Stream error:', error)
       updateMessage(sessionId, assistantMsg.id, {
-        content: `错误: ${error instanceof Error ? error.message : '未知错误'}`,
+        content: `错误: ${error instanceof Error ? error.message : '未知错误'}\n\n请检查您的 API Key 配置是否正确。`,
       })
     } finally {
       setStreaming(false)
@@ -591,23 +621,32 @@ export function ChatView() {
               />
             </div>
 
-            {/* 发送按钮 */}
-            <button
-              onClick={handleSend}
-              disabled={!inputValue.trim() || isStreaming}
-              className="send-btn"
-            >
-              {isStreaming ? (
-                <svg className="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            {/* 发送/停止按钮 */}
+            {isStreaming ? (
+              <button
+                onClick={() => {
+                  // 取消流式响应
+                  setStreaming(false)
+                }}
+                className="send-btn stop-btn"
+                title="停止生成"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="6" width="12" height="12" rx="2"/>
                 </svg>
-              ) : (
+              </button>
+            ) : (
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim()}
+                className="send-btn"
+              >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="22" y1="2" x2="11" y2="13"/>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                 </svg>
-              )}
-            </button>
+              </button>
+            )}
           </div>
         </div>
         

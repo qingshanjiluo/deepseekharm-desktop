@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { llmService, LlmStreamOptions } from './llm-service'
 
 /**
  * Cordis运行时管理器
@@ -32,16 +33,14 @@ export class CordisRuntime extends EventEmitter {
   }
 
   private async initializeServices(): Promise<void> {
-    // TODO: 这里将集成实际的Cordis插件系统
-    // 目前先创建一个基本的服务框架
-    
-    // 模拟服务注册
+    // LLM服务 - 使用真实API
     this.services.set('llm', {
-      stream: this.createMockStream.bind(this),
-      listModels: this.createMockListModels.bind(this),
-      setProvider: this.createMockSetProvider.bind(this),
-      getConfig: this.createMockGetConfig.bind(this),
-      updateConfig: this.createMockUpdateConfig.bind(this),
+      stream: (options: LlmStreamOptions) => llmService.stream(options),
+      listModels: () => llmService.listModels(),
+      setProvider: (provider: string) => llmService.setProvider(provider),
+      getConfig: () => llmService.getConfig(),
+      updateConfig: (config: Record<string, unknown>) => llmService.updateConfig(config),
+      cancelStream: (rpcId: string) => llmService.cancelStream(rpcId),
     })
 
     this.services.set('tools', {
@@ -82,44 +81,7 @@ export class CordisRuntime extends EventEmitter {
     console.log('Cordis Runtime disposed')
   }
 
-  // Mock方法 - 这些将在实际集成时被替换
-  private async *createMockStream(options: Record<string, unknown>): AsyncIterable<{ type: string; delta?: string }> {
-    // 模拟流式响应
-    const content = '这是一个模拟的响应。在实际实现中，这里将连接到DeepSeek API。'
-    
-    for (const char of content) {
-      await new Promise(resolve => setTimeout(resolve, 50))
-      yield { type: 'text-delta', delta: char }
-    }
-    
-    yield { type: 'block-end' }
-    yield { type: 'finish', delta: 'stop' }
-  }
-
-  private createMockListModels(): Array<{ id: string; name: string; provider: string }> {
-    return [
-      { id: 'deepseek-chat', name: 'DeepSeek Chat', provider: 'deepseek' },
-      { id: 'deepseek-coder', name: 'DeepSeek Coder', provider: 'deepseek' },
-      { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', provider: 'deepseek' },
-    ]
-  }
-
-  private createMockSetProvider(provider: string): void {
-    console.log(`Provider set to: ${provider}`)
-  }
-
-  private createMockGetConfig(): Record<string, unknown> {
-    return {
-      provider: 'deepseek',
-      model: 'deepseek-chat',
-      baseUrl: 'https://api.deepseek.com',
-    }
-  }
-
-  private createMockUpdateConfig(config: Record<string, unknown>): void {
-    console.log('Config updated:', config)
-  }
-
+  // Mock方法 - 工具、会话、沙箱服务（待实际集成）
   private async createMockToolExecute(name: string, args: Record<string, unknown>): Promise<{ success: boolean; output?: unknown }> {
     console.log(`Executing tool: ${name}`, args)
     return { success: true, output: `Tool ${name} executed successfully` }
