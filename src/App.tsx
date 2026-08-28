@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { AppFrame } from './components/layout/AppFrame'
 import { ChatView } from './components/chat/ChatView'
 import { useAppStore } from './store'
+import { useKeyboardShortcuts } from './hooks'
 import './App.css'
 
 // 声明全局API类型
@@ -60,6 +61,9 @@ declare global {
 function App() {
   const [platform, setPlatform] = useState('')
   const { settings } = useAppStore()
+  
+  // 初始化键盘快捷键
+  useKeyboardShortcuts()
 
   useEffect(() => {
     // 获取系统信息
