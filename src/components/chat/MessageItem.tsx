@@ -22,6 +22,7 @@ export function MessageItem({
   const [copied, setCopied] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState(message.content)
+  const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null)
 
   const isUser = message.role === 'user'
   const isAssistant = message.role === 'assistant'
@@ -52,6 +53,11 @@ export function MessageItem({
   const handleCancelEdit = () => {
     setIsEditing(false)
     setEditContent(message.content)
+  }
+
+  // 反馈
+  const handleFeedback = (type: 'positive' | 'negative') => {
+    setFeedback(feedback === type ? null : type)
   }
 
   return (
@@ -184,16 +190,48 @@ export function MessageItem({
             </button>
           )}
           {isAssistant && (
-            <button 
-              className="action-btn"
-              onClick={onRetry}
-              title="重试"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="23 4 23 10 17 10"/>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-              </svg>
-            </button>
+            <>
+              <button 
+                className={`action-btn ${feedback === 'positive' ? 'active' : ''}`}
+                onClick={() => handleFeedback('positive')}
+                title="点赞"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={feedback === 'positive' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                </svg>
+              </button>
+              <button 
+                className={`action-btn ${feedback === 'negative' ? 'active negative' : ''}`}
+                onClick={() => handleFeedback('negative')}
+                title="点踩"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={feedback === 'negative' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                  <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+                </svg>
+              </button>
+              <button 
+                className="action-btn"
+                onClick={onRetry}
+                title="重新生成"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="23 4 23 10 17 10"/>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+              </button>
+              <button 
+                className="action-btn"
+                title="分享"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="18" cy="5" r="3"/>
+                  <circle cx="6" cy="12" r="3"/>
+                  <circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+              </button>
+            </>
           )}
         </div>
       )}

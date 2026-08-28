@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { useAppStore, Message } from '../../store'
 import { MessageItem } from './MessageItem'
 import { AttachmentButton } from './AttachmentButton'
@@ -17,6 +17,15 @@ interface Attachment {
   size: number
   content?: string
   path?: string
+}
+
+// Turn 统计接口
+interface TurnStats {
+  turnNumber: number
+  startTime: number
+  endTime?: number
+  tokenUsage: number
+  model: string
 }
 
 export function ChatView() {
@@ -42,8 +51,48 @@ export function ChatView() {
   const [slashQuery, setSlashQuery] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [showTrajectory, setShowTrajectory] = useState(false)
+  const [activeTurn, setActiveTurn] = useState<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesListRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // 计算 Turn 统计
+  const turnStats = useMemo(() => {
+    if (!currentSession) return []
+    const stats: TurnStats[] = []
+    let turnNumber = 0
+    let currentTurnStart = 0
+    let currentTokenUsage = 0
+
+    currentSession.messages.forEach((msg, idx) => {
+      if (msg.role === 'user') {
+        turnNumber++
+        currentTurnStart = msg.timestamp
+        currentTokenUsage = 0
+      }
+      if (msg.usage) {
+        currentTokenUsage += msg.usage.totalTokens
+      }
+      if (msg.role === 'assistant' && idx === currentSession.messages.length - 1) {
+        stats.push({
+          turnNumber,
+          startTime: currentTurnStart,
+          endTime: msg.timestamp,
+          tokenUsage: currentTokenUsage,
+          model: currentSession.model,
+        })
+      }
+    })
+    return stats
+  }, [currentSession?.messages, currentSession?.model])
+
+  // 计算总 Token 使用量
+  const totalTokenUsage = useMemo(() => {
+    if (!currentSession) return 0
+    return currentSession.messages.reduce((sum, msg) => {
+      return sum + (msg.usage?.totalTokens || 0)
+    }, 0)
+  }, [currentSession?.messages])
 
   // 自动滚动到底部
   useEffect(() => {
@@ -57,6 +106,48 @@ export function ChatView() {
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`
     }
   }, [inputValue])
+
+  // 监听滚动事件以更新活动 Turn
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!messagesListRef.current || !currentSession) return
+      
+      const container = messagesListRef.current
+      const scrollTop = container.scrollTop
+      const containerHeight = container.clientHeight
+      const scrollCenter = scrollTop + containerHeight / 2
+
+      // 找到滚动中心位置的消息
+      const messageElements = container.querySelectorAll('[data-message-index]')
+      let currentIdx = 0
+
+      messageElements.forEach((el) => {
+        const rect = el.getBoundingClientRect()
+        const containerRect = container.getBoundingClientRect()
+        const elementCenter = rect.top + rect.height / 2 - containerRect.top + scrollTop
+        
+        if (elementCenter <= scrollCenter) {
+          currentIdx = parseInt(el.getAttribute('data-message-index') || '0')
+        }
+      })
+
+      // 计算当前 Turn
+      const messages = currentSession.messages
+      let currentTurn = 1
+      for (let i = 0; i <= currentIdx && i < messages.length; i++) {
+        if (messages[i].role === 'user' && i > 0) {
+          currentTurn++
+        }
+      }
+      setActiveTurn(currentTurn)
+    }
+
+    const container = messagesListRef.current
+    if (container) {
+      container.addEventListener('scroll', handleScroll)
+      return () => container.removeEventListener('scroll', handleScroll)
+    }
+  }, [currentSession?.messages])
 
   // 处理输入变化
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -200,7 +291,7 @@ export function ChatView() {
 
   // 复制消息
   const handleCopy = (content: string) => {
-    console.log('Copied:', content)
+    navigator.clipboard.writeText(content)
   }
 
   // 重试消息
@@ -257,6 +348,11 @@ export function ChatView() {
     })
   }
 
+  // 滚动到底部
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
     <div className="chat-view">
       {/* 头部 */}
@@ -311,8 +407,58 @@ export function ChatView() {
         </div>
       </div>
 
+      {/* Turn 导航条 */}
+      {currentSession && currentSession.messages.length > 0 && (
+        <div className="turn-navigator">
+          <div className="turn-stats">
+            <span className="stat-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              {currentSession.messages.filter(m => m.role === 'user').length} 轮对话
+            </span>
+            <span className="stat-item">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+              {totalTokenUsage.toLocaleString()} tokens
+            </span>
+          </div>
+          <div className="turn-list">
+            {turnStats.map((stat) => (
+              <button
+                key={stat.turnNumber}
+                className={`turn-item ${activeTurn === stat.turnNumber ? 'active' : ''}`}
+                onClick={() => {
+                  // 滚动到对应的 Turn
+                  const turnIndex = currentSession.messages.findIndex(
+                    (msg, idx) => {
+                      let turn = 0
+                      for (let i = 0; i <= idx; i++) {
+                        if (currentSession.messages[i].role === 'user' && i > 0) turn++
+                      }
+                      return turn === stat.turnNumber
+                    }
+                  )
+                  if (turnIndex >= 0) {
+                    const element = messagesListRef.current?.querySelector(
+                      `[data-message-index="${turnIndex}"]`
+                    )
+                    element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  }
+                }}
+              >
+                Turn {stat.turnNumber}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 消息列表 */}
-      <div className="messages-container">
+      <div className="messages-container" ref={messagesListRef}>
         {!currentSession || currentSession.messages.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">
@@ -359,19 +505,29 @@ export function ChatView() {
           </div>
         ) : (
           <div className="messages-list">
-            {currentSession.messages.map((message) => (
-              <MessageItem
-                key={message.id}
-                message={message}
-                isStreaming={isStreaming && message.id === currentSession.messages[currentSession.messages.length - 1]?.id}
-                onCopy={handleCopy}
-                onRetry={handleRetry}
-                onEdit={(content) => handleEdit(message.id, content)}
-              />
+            {currentSession.messages.map((message, index) => (
+              <div key={message.id} data-message-index={index}>
+                <MessageItem
+                  message={message}
+                  isStreaming={isStreaming && message.id === currentSession.messages[currentSession.messages.length - 1]?.id}
+                  onCopy={handleCopy}
+                  onRetry={handleRetry}
+                  onEdit={(content) => handleEdit(message.id, content)}
+                />
+              </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
         )}
+      </div>
+
+      {/* 滚动到底部按钮 */}
+      <div className="scroll-to-bottom">
+        <button className="scroll-btn" onClick={scrollToBottom}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
       </div>
 
       {/* 输入区域 */}
@@ -456,6 +612,12 @@ export function ChatView() {
           <span>DeepSeek Harness v1.0.0</span>
           <span className="hint-separator">•</span>
           <span>{settings.model}</span>
+          {totalTokenUsage > 0 && (
+            <>
+              <span className="hint-separator">•</span>
+              <span>{totalTokenUsage.toLocaleString()} tokens</span>
+            </>
+          )}
         </div>
       </div>
 

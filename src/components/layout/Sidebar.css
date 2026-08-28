@@ -2,119 +2,156 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 100%;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-primary);
   overflow: hidden;
+  transition: width 0.2s ease;
 }
 
-/* 头部 */
-.sidebar-header {
+.sidebar.collapsed {
+  width: 56px;
+}
+
+/* 品牌区域 */
+.sidebar-brand {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px;
+  border-bottom: 1px solid var(--border-secondary);
 }
 
-.brand {
+.brand-btn {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  flex: 1;
+}
+
+.brand-btn:hover {
+  background: var(--bg-hover);
 }
 
 .brand-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  color: white;
+  width: 24px;
+  height: 24px;
+  color: var(--accent-primary);
 }
 
 .brand-name {
   font-size: 14px;
   font-weight: 600;
-  color: #e2e8f0;
-  letter-spacing: -0.3px;
+  color: var(--text-primary);
 }
 
-.icon-btn {
+.toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
+  width: 32px;
+  height: 32px;
   background: transparent;
-  color: #94a3b8;
-  border-radius: 6px;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.icon-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+.toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
-/* 搜索框 */
-.sidebar-search {
-  position: relative;
-  padding: 12px 16px;
-}
-
-.search-icon {
+.rail-mark {
   position: absolute;
-  left: 28px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #64748b;
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.search-input {
-  width: 100%;
-  padding: 8px 12px 8px 36px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  color: #e2e8f0;
-  font-size: 13px;
-  outline: none;
-  transition: all 0.2s ease;
+/* 新建会话区域 */
+.new-session-area {
+  padding: 12px;
 }
 
-.search-input::placeholder {
-  color: #64748b;
-}
-
-.search-input:focus {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(99, 102, 241, 0.5);
-}
-
-/* 新建按钮 */
 .new-session-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: 0 16px 12px;
+  width: 100%;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--accent-primary);
   border: none;
   border-radius: 8px;
   color: white;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .new-session-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: var(--accent-hover);
+}
+
+.new-session-label {
+  white-space: nowrap;
+}
+
+/* 会话区域 */
+.session-region {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 搜索框 */
+.sidebar-search {
+  padding: 0 12px 12px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.search-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.sidebar-search {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 22px;
+  top: 10px;
+  color: var(--text-tertiary);
+  pointer-events: none;
 }
 
 /* 会话列表 */
@@ -133,51 +170,67 @@
 }
 
 .session-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-primary);
   border-radius: 2px;
 }
 
 .empty-sessions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 32px 16px;
-  text-align: center;
-  color: #64748b;
+  color: var(--text-tertiary);
   font-size: 13px;
+  text-align: center;
 }
 
+/* 会话分组 */
+.session-group {
+  margin-bottom: 8px;
+}
+
+.group-label {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 会话项 */
 .session-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  margin-bottom: 2px;
+  padding: 8px 12px;
+  margin: 2px 4px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
+  position: relative;
 }
 
 .session-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-hover);
 }
 
 .session-item.active {
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--bg-active);
 }
 
 .session-icon {
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 8px;
-  color: #94a3b8;
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
 .session-item.active .session-icon {
-  background: rgba(99, 102, 241, 0.2);
-  color: #818cf8;
+  color: var(--accent-secondary);
 }
 
 .session-info {
@@ -190,26 +243,30 @@
 
 .session-name {
   font-size: 13px;
-  color: #e2e8f0;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.session-item.active .session-name {
+  font-weight: 500;
+}
+
 .session-name-input {
   width: 100%;
   padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(99, 102, 241, 0.5);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent-primary);
   border-radius: 4px;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 13px;
   outline: none;
 }
 
 .session-time {
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-tertiary);
 }
 
 .session-actions {
@@ -229,49 +286,112 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border: none;
   background: transparent;
-  color: #94a3b8;
+  border: none;
   border-radius: 4px;
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .session-action-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .session-action-btn.delete:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
 }
 
-/* 底部 */
-.sidebar-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+/* 底部区域 */
+.sidebar-foot {
+  padding: 12px;
+  border-top: 1px solid var(--border-secondary);
 }
 
 .footer-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
   background: transparent;
-  color: #94a3b8;
+  border: none;
   border-radius: 8px;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .footer-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.footer-label {
+  font-size: 13px;
+}
+
+/* 折叠状态 */
+.sidebar.collapsed .sidebar-brand {
+  justify-content: center;
+  padding: 12px 8px;
+}
+
+.sidebar.collapsed .new-session-area {
+  padding: 8px;
+}
+
+.sidebar.collapsed .new-session-btn {
+  padding: 10px;
+}
+
+.sidebar.collapsed .session-item {
+  justify-content: center;
+  padding: 10px;
+  margin: 2px 0;
+}
+
+.sidebar.collapsed .session-actions {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-foot {
+  padding: 8px;
+}
+
+.sidebar.collapsed .footer-btn {
+  justify-content: center;
+  padding: 10px;
+}
+
+/* 铁轨进入动画 */
+.sidebar.rail-in .session-item {
+  animation: railFadeIn 0.2s ease;
+}
+
+@keyframes railFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    z-index: 100;
+    height: 100%;
+  }
+
+  .sidebar.collapsed {
+    width: 0;
+    border-right: none;
+  }
 }

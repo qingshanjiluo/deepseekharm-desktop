@@ -172,6 +172,102 @@
   transform: translateY(-1px);
 }
 
+/* Turn 导航条 */
+.turn-navigator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  background: rgba(15, 15, 26, 0.6);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 16px;
+}
+
+.turn-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.turn-list {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  max-width: 400px;
+  scrollbar-width: none;
+}
+
+.turn-list::-webkit-scrollbar {
+  display: none;
+}
+
+.turn-item {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: #94a3b8;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.turn-item:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+}
+
+.turn-item.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #818cf8;
+}
+
+/* 滚动到底部按钮 */
+.scroll-to-bottom {
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin-top: -32px;
+  pointer-events: none;
+  position: relative;
+  z-index: 10;
+}
+
+.scroll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(30, 30, 50, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: #94a3b8;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-btn:hover {
+  background: rgba(50, 50, 70, 0.9);
+  color: #e2e8f0;
+  transform: scale(1.1);
+}
+
 /* 消息列表 */
 .messages-list {
   display: flex;
