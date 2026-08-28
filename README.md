@@ -2,6 +2,10 @@
 
 DeepSeek Harness 的桌面应用程序版本，基于 Electron 构建。
 
+[![Build & Release](https://github.com/qingshanjiluo/deepseekharm-desktop/actions/workflows/build.yml/badge.svg)](https://github.com/qingshanjiluo/deepseekharm-desktop/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/qingshanjiluo/deepseekharm-desktop)](https://github.com/qingshanjiluo/deepseekharm-desktop/releases)
+
 ## 功能特性
 
 - 🖥️ **完整的桌面应用体验** - 原生窗口控制和系统托盘
@@ -10,6 +14,8 @@ DeepSeek Harness 的桌面应用程序版本，基于 Electron 构建。
 - 🛡️ **安全沙箱** - 进程隔离和权限管理
 - 🔄 **自动更新** - 支持静默更新和增量更新
 - 📁 **文件管理** - 原生文件对话框和文件系统访问
+- 🎨 **现代化UI** - 深色主题，流畅动画
+- 🔒 **安全特性** - CSP、沙箱、权限管理
 
 ## 技术栈
 
@@ -18,6 +24,7 @@ DeepSeek Harness 的桌面应用程序版本，基于 Electron 构建。
 - **构建**: electron-vite + electron-builder
 - **状态管理**: Zustand
 - **样式**: CSS Modules
+- **CI/CD**: GitHub Actions
 
 ## 开发环境要求
 
@@ -31,6 +38,12 @@ DeepSeek Harness 的桌面应用程序版本，基于 Electron 构建。
 
 ```bash
 pnpm install
+```
+
+### 生成图标
+
+```bash
+node scripts/create-icons.js
 ```
 
 ### 开发模式
@@ -49,6 +62,26 @@ pnpm build
 
 ```bash
 pnpm package
+```
+
+### 打包便携版
+
+```bash
+pnpm package:portable
+```
+
+### 代码检查
+
+```bash
+pnpm lint           # ESLint检查
+pnpm lint:fix       # 自动修复
+pnpm typecheck      # TypeScript类型检查
+```
+
+### 清理构建产物
+
+```bash
+pnpm clean
 ```
 
 ## 项目结构
