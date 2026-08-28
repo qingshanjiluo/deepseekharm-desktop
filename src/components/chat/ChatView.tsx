@@ -7,6 +7,8 @@ import type { SlashCommand } from './SlashCommandMenu'
 import { SettingsModal } from '../settings/SettingsModal'
 import { ModelSelector } from '../model/ModelSelector'
 import { TrajectoryView } from '../trajectory/TrajectoryView'
+import { KnowledgePanel } from '../knowledge/KnowledgePanel'
+import { knowledgeService } from '../../backend/knowledge-service'
 import { useTranslation } from '../../i18n'
 import { usePointerScrollbar } from '../../hooks'
 import './ChatView.css'
@@ -52,6 +54,7 @@ export function ChatView() {
   const [slashQuery, setSlashQuery] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [showTrajectory, setShowTrajectory] = useState(false)
+  const [showKnowledge, setShowKnowledge] = useState(false)
   const [activeTurn, setActiveTurn] = useState<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesListRef = useRef<HTMLDivElement>(null)
@@ -415,6 +418,16 @@ export function ChatView() {
           </button>
           <button 
             className="header-btn"
+            onClick={() => setShowKnowledge(true)}
+            title="知识库"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </button>
+          <button 
+            className="header-btn"
             onClick={() => setShowSettings(true)}
             title={t.settings.title}
           >
@@ -673,6 +686,15 @@ export function ChatView() {
       <SettingsModal 
         isOpen={showSettings} 
         onClose={() => setShowSettings(false)} 
+      />
+
+      {/* 知识库面板 */}
+      <KnowledgePanel 
+        isOpen={showKnowledge} 
+        onClose={() => setShowKnowledge(false)}
+        onInsertContext={(context) => {
+          setInputValue(prev => prev + '\n\n' + context)
+        }}
       />
     </div>
   )
