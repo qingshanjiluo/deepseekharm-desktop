@@ -151,7 +151,38 @@ img {
   -webkit-user-select: none;
 }
 
-/* 滚动条样式 (全局) */
+/* 滚动条样式 - 指针感知模式 (默认隐藏) */
+.pointer-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.pointer-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background: transparent;
+}
+
+.pointer-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pointer-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.15s ease;
+}
+
+/* 指针悬停或滚动时显示 */
+.pointer-scrollbar.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+}
+
+.pointer-scrollbar.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* 非指针滚动区域保持传统滚动条 */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

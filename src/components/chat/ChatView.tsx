@@ -8,6 +8,7 @@ import { SettingsModal } from '../settings/SettingsModal'
 import { ModelSelector } from '../model/ModelSelector'
 import { TrajectoryView } from '../trajectory/TrajectoryView'
 import { useTranslation } from '../../i18n'
+import { usePointerScrollbar } from '../../hooks'
 import './ChatView.css'
 
 interface Attachment {
@@ -458,7 +459,7 @@ export function ChatView() {
       )}
 
       {/* 消息列表 */}
-      <div className="messages-container" ref={messagesListRef}>
+      <div className="messages-container pointer-scrollbar" ref={messagesListRef}>
         {!currentSession || currentSession.messages.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">

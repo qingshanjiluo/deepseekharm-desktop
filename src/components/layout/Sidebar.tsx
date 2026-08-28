@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '../../store'
 import { useTranslation } from '../../i18n'
+import { usePointerScrollbar } from '../../hooks'
 import { FishLogo } from '../icons/BrandIcons'
 import { IconSearch, IconPlus, IconSettings, IconChevronLeft, IconChevronRight, IconEdit, IconTrash, IconFile } from '../icons'
 import './Sidebar.css'
@@ -26,6 +27,7 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
   const [hoveredSession, setHoveredSession] = useState<string | null>(null)
   const [settled, setSettled] = useState(settings.sidebarCollapsed)
   const columnRef = useRef<HTMLDivElement>(null)
+  const sessionListRef = usePointerScrollbar()
 
   useEffect(() => {
     if (!settings.sidebarCollapsed) {
@@ -139,7 +141,7 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
           </div>
         )}
 
-        <div className="session-list">
+        <div className="session-list pointer-scrollbar" ref={sessionListRef}>
           {filteredSessions.length === 0 ? (
             <div className="empty-sessions">
               {searchQuery ? t.common.search + '...' : t.sidebar.noSessions}
