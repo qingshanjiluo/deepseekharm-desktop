@@ -2,12 +2,14 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { useAppStore } from '../../store'
 import { Sidebar } from './Sidebar'
 import { DetailsPanel } from './DetailsPanel'
+import { McpPanel } from '../mcp/McpPanel'
 import './AppFrame.css'
 
 export function AppFrame({ children }: { children: React.ReactNode }) {
   const { settings, updateSettings } = useAppStore()
   const [isResizing, setIsResizing] = useState(false)
   const [resizeTarget, setResizeTarget] = useState<'sidebar' | 'details' | null>(null)
+  const [showMcp, setShowMcp] = useState(false)
 
   // 处理面板拖拽调整
   const handleMouseDown = useCallback((target: 'sidebar' | 'details') => (e: React.MouseEvent) => {
@@ -54,7 +56,7 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
         className={`sidebar-panel ${settings.sidebarCollapsed ? 'collapsed' : ''}`}
         style={{ width: settings.sidebarCollapsed ? 0 : settings.sidebarWidth }}
       >
-        <Sidebar />
+        <Sidebar onOpenMcp={() => setShowMcp(true)} />
       </div>
 
       {/* 侧边栏拖拽手柄 */}
@@ -85,6 +87,9 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
       >
         <DetailsPanel />
       </div>
+
+      {/* MCP 面板 */}
+      <McpPanel isOpen={showMcp} onClose={() => setShowMcp(false)} />
     </div>
   )
 }

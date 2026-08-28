@@ -8,9 +8,10 @@ import './Sidebar.css'
 
 interface SidebarProps {
   onOpenSettings?: () => void
+  onOpenMcp?: () => void
 }
 
-export function Sidebar({ onOpenSettings }: SidebarProps) {
+export function Sidebar({ onOpenSettings, onOpenMcp }: SidebarProps) {
   const { 
     sessions, 
     currentSessionId, 
@@ -214,6 +215,19 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
       </div>
 
       <div className="sidebar-foot">
+        <button 
+          className="footer-btn"
+          title="MCP 服务器"
+          onClick={onOpenMcp}
+        >
+          <svg width={wide ? 16 : 18} height={wide ? 16 : 18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+            <line x1="6" y1="6" x2="6.01" y2="6"/>
+            <line x1="6" y1="18" x2="6.01" y2="18"/>
+          </svg>
+          {wide && <span className="footer-label">MCP</span>}
+        </button>
         <button 
           className="footer-btn"
           title={t.settings.title}
