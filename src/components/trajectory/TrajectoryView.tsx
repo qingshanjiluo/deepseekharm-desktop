@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAppStore, Message, ToolCall } from '../../store'
 import { useTranslation } from '../../i18n'
+import { TrajectoryTimeline } from './TrajectoryTimeline'
 import './TrajectoryView.css'
 
 interface TrajectoryViewProps {
@@ -8,7 +9,7 @@ interface TrajectoryViewProps {
   onClose: () => void
 }
 
-type TrajectoryTab = 'messages' | 'tools' | 'tokens' | 'json'
+type TrajectoryTab = 'messages' | 'tools' | 'tokens' | 'json' | 'timeline'
 
 export function TrajectoryView({ isOpen, onClose }: TrajectoryViewProps) {
   const { currentSessionId, settings } = useAppStore()
@@ -58,6 +59,7 @@ export function TrajectoryView({ isOpen, onClose }: TrajectoryViewProps) {
     { id: 'tools', label: '工具调用', count: allToolCalls.length },
     { id: 'tokens', label: 'Token 统计', count: tokenStats.total },
     { id: 'json', label: 'JSON 导出' },
+    { id: 'timeline', label: '时间线' },
   ]
 
   // 导出 JSON
@@ -307,6 +309,14 @@ export function TrajectoryView({ isOpen, onClose }: TrajectoryViewProps) {
                 }, null, 2)}
               </pre>
             </div>
+          )}
+
+          {/* 时间线视图 */}
+          {activeTab === 'timeline' && (
+            <TrajectoryTimeline 
+              messages={currentSession.messages}
+              onClose={onClose}
+            />
           )}
         </div>
       </div>

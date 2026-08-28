@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAppStore } from '../../store'
+import { TodoPanel, TodoItem } from '../chat/TodoPanel'
 import './DetailsPanel.css'
 
 export function DetailsPanel() {
@@ -7,7 +8,18 @@ export function DetailsPanel() {
   const currentSession = useAppStore(state => 
     state.sessions.find(s => s.id === state.currentSessionId)
   )
-  const [activeTab, setActiveTab] = useState<'info' | 'tools' | 'context'>('info')
+  const [activeTab, setActiveTab] = useState<'info' | 'tools' | 'context' | 'todos'>('info')
+  const [todos, setTodos] = useState<TodoItem[]>([])
+
+  const handleAddTodo = (text: string) => {
+    setTodos(prev => [...prev, { id: Date.now().toString(), text, completed: false, createdAt: Date.now() }])
+  }
+  const handleToggleTodo = (id: string) => {
+    setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
+  }
+  const handleRemoveTodo = (id: string) => {
+    setTodos(prev => prev.filter(t => t.id !== id))
+  }
 
   // 计算 Token 统计
   const tokenStats = currentSession?.messages.reduce(
@@ -88,6 +100,12 @@ export function DetailsPanel() {
           onClick={() => setActiveTab('context')}
         >
           上下文
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'todos' ? 'active' : ''}`}
+          onClick={() => setActiveTab('todos')}
+        >
+          任务
         </button>
       </div>
 
@@ -285,6 +303,18 @@ export function DetailsPanel() {
                 </span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* 任务标签 */}
+        {activeTab === 'todos' && (
+          <div className="details-section">
+            <TodoPanel 
+              items={todos}
+              onToggle={handleToggleTodo}
+              onAdd={handleAddTodo}
+              onRemove={handleRemoveTodo}
+            />
           </div>
         )}
       </div>

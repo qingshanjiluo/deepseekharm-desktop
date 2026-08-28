@@ -5,6 +5,12 @@ import { AttachmentButton } from './AttachmentButton'
 import { SlashCommandMenu } from './SlashCommandMenu'
 import { ContextMeter } from './ContextMeter'
 import { DropOverlay } from './DropOverlay'
+import { PlanModeControl } from './PlanModeControl'
+import { SubagentHeader } from './SubagentHeader'
+import { QueueDock } from './QueueDock'
+import { RichTextEditor } from './RichTextEditor'
+import { CompactionItem } from './CompactionItem'
+import { SystemPromptRow } from './SystemPromptRow'
 import type { SlashCommand } from './SlashCommandMenu'
 import { SettingsModal } from '../settings/SettingsModal'
 import { ModelSelector } from '../model/ModelSelector'
@@ -60,6 +66,8 @@ export function ChatView() {
   const [activeTurn, setActiveTurn] = useState<number | null>(null)
   const [version, setVersion] = useState('v1.0.0')
   const [isDragging, setIsDragging] = useState(false)
+  const [queuedMessages, setQueuedMessages] = useState<{ id: string; content: string; timestamp: number; status: 'queued' | 'processing' }[]>([])
+  const [subagents, setSubagents] = useState<{ id: string; name: string; status: 'running' | 'completed' | 'failed'; model: string }[]>([])
   const dragCounterRef = useRef(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesListRef = useRef<HTMLDivElement>(null)
@@ -448,6 +456,7 @@ export function ChatView() {
         <div className="header-info">
           <h2 className="session-title">{currentSession?.name || t.sidebar.untitledSession}</h2>
           <ModelSelector compact />
+          <PlanModeControl />
         </div>
         <div className="header-actions">
           <button 
@@ -607,20 +616,46 @@ export function ChatView() {
             </div>
           </div>
         ) : (
-          <div className="messages-list">
-            {currentSession.messages.map((message, index) => (
-              <div key={message.id} data-message-index={index}>
-                <MessageItem
-                  message={message}
-                  isStreaming={isStreaming && message.id === currentSession.messages[currentSession.messages.length - 1]?.id}
-                  onCopy={handleCopy}
-                  onRetry={handleRetry}
-                  onEdit={(content) => handleEdit(message.id, content)}
-                />
-              </div>
-            ))}
+          <>
+            {subagents.length > 0 && (
+              <SubagentHeader 
+                agents={subagents}
+                onSelect={(id) => console.log('Select agent:', id)}
+              />
+            )}
+            <div className="messages-list">
+            {currentSession.messages.map((message, index) => {
+              // 渲染系统提示行
+              if ((message as any).type === 'system') {
+                return (
+                  <div key={message.id} data-message-index={index}>
+                    <SystemPromptRow content={message.content} />
+                  </div>
+                )
+              }
+              // 渲染压缩指示器
+              if ((message as any).type === 'compaction') {
+                return (
+                  <div key={message.id} data-message-index={index}>
+                    <CompactionItem timestamp={message.timestamp} />
+                  </div>
+                )
+              }
+              return (
+                <div key={message.id} data-message-index={index}>
+                  <MessageItem
+                    message={message}
+                    isStreaming={isStreaming && message.id === currentSession.messages[currentSession.messages.length - 1]?.id}
+                    onCopy={handleCopy}
+                    onRetry={handleRetry}
+                    onEdit={(content) => handleEdit(message.id, content)}
+                  />
+                </div>
+              )
+            })}
             <div ref={messagesEndRef} />
           </div>
+          </>
         )}
       </div>
 
@@ -632,6 +667,13 @@ export function ChatView() {
           </svg>
         </button>
       </div>
+
+      {/* 消息队列 */}
+      <QueueDock 
+        items={queuedMessages}
+        onCancel={(id) => setQueuedMessages(prev => prev.filter(m => m.id !== id))}
+        onReorder={() => {}}
+      />
 
       {/* 输入区域 */}
       <div className="input-area">
@@ -677,17 +719,14 @@ export function ChatView() {
               </svg>
             </button>
 
-            {/* 输入框 */}
+            {/* 富文本输入框 */}
             <div className="input-wrapper">
-              <textarea
-                ref={textareaRef}
+              <RichTextEditor
                 value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
+                onChange={setInputValue}
+                onSubmit={handleSend}
                 placeholder={t.chat.inputPlaceholder}
                 disabled={isStreaming}
-                rows={1}
-                className="message-input"
               />
             </div>
 

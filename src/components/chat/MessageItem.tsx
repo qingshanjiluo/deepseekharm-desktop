@@ -168,12 +168,23 @@ export function MessageItem({
           />
         )}
 
-        {/* 权限选择 */}
-        <PermissionSelect 
-          onAllow={handleApprove}
-          onDeny={handleDeny}
-          toolName="bash"
-        />
+        {/* 工具审批 - 仅在有待审批工具时显示 */}
+        {message.toolCalls?.some(tc => tc.name === 'bash' && !tc.result) && (
+          <ApprovalCommand 
+            command={message.toolCalls?.find(tc => tc.name === 'bash')?.arguments || ''}
+            onApprove={handleApprove}
+            onDeny={handleDeny}
+          />
+        )}
+
+        {/* 权限选择 - 仅在需要时显示 */}
+        {message.toolCalls?.some(tc => !tc.result) && (
+          <PermissionSelect 
+            onAllow={handleApprove}
+            onDeny={handleDeny}
+            toolName={message.toolCalls?.find(tc => !tc.result)?.name || ''}
+          />
+        )}
       </div>
 
       {/* 操作按钮 */}
