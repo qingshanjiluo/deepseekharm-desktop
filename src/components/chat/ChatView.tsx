@@ -1,7 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useAppStore } from '../../store'
+import { useAppStore, Message } from '../../store'
 import { MessageItem } from './MessageItem'
+import { AttachmentButton } from './AttachmentButton'
+import { SlashCommandMenu } from './SlashCommandMenu'
+import type { SlashCommand } from './SlashCommandMenu'
+import { SettingsModal } from '../settings/SettingsModal'
 import './ChatView.css'
+
+interface Attachment {
+  id: string
+  name: string
+  type: 'file' | 'image' | 'code'
+  size: number
+  content?: string
+  path?: string
+}
 
 export function ChatView() {
   const {
@@ -20,6 +33,10 @@ export function ChatView() {
   )
   
   const [inputValue, setInputValue] = useState('')
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [showSlashMenu, setShowSlashMenu] = useState(false)
+  const [slashQuery, setSlashQuery] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -36,6 +53,67 @@ export function ChatView() {
     }
   }, [inputValue])
 
+  // 处理输入变化
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setInputValue(value)
+
+    // 检测斜杠命令
+    if (value.startsWith('/')) {
+      setShowSlashMenu(true)
+      setSlashQuery(value.slice(1))
+    } else {
+      setShowSlashMenu(false)
+      setSlashQuery('')
+    }
+  }
+
+  // 选择斜杠命令
+  const handleSlashCommandSelect = (command: SlashCommand) => {
+    setShowSlashMenu(false)
+    setSlashQuery('')
+    
+    switch (command.id) {
+      case 'clear':
+        if (currentSessionId) {
+          updateSession(currentSessionId, { messages: [] })
+        }
+        break
+      case 'export':
+        handleExport()
+        break
+      case 'model':
+        // TODO: 显示模型选择器
+        break
+      case 'settings':
+        setShowSettings(true)
+        break
+      default:
+        // 其他命令作为普通文本发送
+        setInputValue(`/${command.name} `)
+    }
+  }
+
+  // 导出会话
+  const handleExport = () => {
+    if (!currentSession) return
+    
+    const content = currentSession.messages
+      .map((msg) => {
+        const role = msg.role === 'user' ? '**你**' : '**DeepSeek**'
+        return `### ${role}\n\n${msg.content}`
+      })
+      .join('\n\n---\n\n')
+    
+    const blob = new Blob([content], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${currentSession.name || '会话'}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   // 发送消息
   const handleSend = async () => {
     if (!inputValue.trim() || isStreaming) return
@@ -49,6 +127,7 @@ export function ChatView() {
 
     const content = inputValue.trim()
     setInputValue('')
+    setAttachments([])
 
     // 添加用户消息
     addMessage(sessionId, { role: 'user', content })
@@ -139,6 +218,33 @@ export function ChatView() {
     }
   }
 
+  // 添加附件
+  const handleAddAttachments = async (files: File[]) => {
+    for (const file of files) {
+      const newAttachment: Attachment = {
+        id: Math.random().toString(36).substring(2),
+        name: file.name,
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        size: file.size,
+      }
+      
+      // 读取文件内容
+      if (file.type.includes('json') || file.type.includes('javascript') || 
+          file.type.includes('typescript') || file.type.includes('text')) {
+        const content = await file.text()
+        newAttachment.content = content
+        newAttachment.type = 'code'
+      }
+      
+      setAttachments(prev => [...prev, newAttachment])
+    }
+  }
+
+  // 移除附件
+  const handleRemoveAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(a => a.id !== id))
+  }
+
   // 切换面板
   const toggleSidebar = () => {
     useAppStore.getState().updateSettings({ 
@@ -162,6 +268,16 @@ export function ChatView() {
           <span className="model-badge">{settings.model}</span>
         </div>
         <div className="header-actions">
+          <button 
+            className="header-btn"
+            onClick={() => setShowSettings(true)}
+            title="设置"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
           <button 
             className="header-btn"
             onClick={() => useAppStore.getState().updateSettings({ 
@@ -242,42 +358,94 @@ export function ChatView() {
 
       {/* 输入区域 */}
       <div className="input-area">
+        {/* 斜杠命令菜单 */}
+        <SlashCommandMenu
+          isOpen={showSlashMenu}
+          query={slashQuery}
+          onSelect={handleSlashCommandSelect}
+          onClose={() => {
+            setShowSlashMenu(false)
+            setSlashQuery('')
+          }}
+        />
+
         <div className="input-container">
-          <div className="input-wrapper">
-            <textarea
-              ref={textareaRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="输入消息... (Enter 发送, Shift+Enter 换行)"
-              disabled={isStreaming}
-              rows={1}
-              className="message-input"
+          {/* 附件列表 */}
+          {attachments.length > 0 && (
+            <AttachmentButton
+              attachments={attachments}
+              onAdd={handleAddAttachments}
+              onRemove={handleRemoveAttachment}
             />
-          </div>
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || isStreaming}
-            className="send-btn"
-          >
-            {isStreaming ? (
-              <svg className="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-              </svg>
-            ) : (
+          )}
+
+          <div className="input-row">
+            {/* 附件按钮 */}
+            <button 
+              className="attach-trigger"
+              onClick={() => {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.multiple = true
+                input.onchange = (e) => {
+                  const files = Array.from((e.target as HTMLInputElement).files || [])
+                  handleAddAttachments(files)
+                }
+                input.click()
+              }}
+              title="添加附件"
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
               </svg>
-            )}
-          </button>
+            </button>
+
+            {/* 输入框 */}
+            <div className="input-wrapper">
+              <textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="输入消息... (Enter 发送, Shift+Enter 换行, / 斜杠命令)"
+                disabled={isStreaming}
+                rows={1}
+                className="message-input"
+              />
+            </div>
+
+            {/* 发送按钮 */}
+            <button
+              onClick={handleSend}
+              disabled={!inputValue.trim() || isStreaming}
+              className="send-btn"
+            >
+              {isStreaming ? (
+                <svg className="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
+        
         <div className="input-hint">
           <span>DeepSeek Harness v1.0.0</span>
           <span className="hint-separator">•</span>
           <span>{settings.model}</span>
         </div>
       </div>
+
+      {/* 设置弹窗 */}
+      <SettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
     </div>
   )
 }
