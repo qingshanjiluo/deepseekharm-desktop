@@ -482,8 +482,12 @@ function DataSettings({ t }: { t: ReturnType<typeof useTranslation>['t'] }) {
     setStatus('idle')
     try {
       const sessionIds = sessions.map(s => s.id)
-      const messageStore = useAppStore.getState().messages || {}
-      const data = await storageService.exportSessions(sessionIds, sessions, messageStore)
+      // Build messages map from sessions
+      const messageMap: Record<string, any[]> = {}
+      for (const session of sessions) {
+        messageMap[session.id] = session.messages
+      }
+      const data = await storageService.exportSessions(sessionIds, sessions, messageMap)
       const success = await storageService.exportToFile(data)
       if (success) {
         setStatus('success')
@@ -510,13 +514,18 @@ function DataSettings({ t }: { t: ReturnType<typeof useTranslation>['t'] }) {
       const result = await storageService.importSessions(data)
       
       // 合并导入的数据
-      const { addSession, updateSession } = useAppStore.getState()
+      const { createSession, updateSession } = useAppStore.getState()
       
       for (const session of result.sessions) {
         const existing = sessions.find(s => s.id === session.id)
         if (!existing) {
-          addSession()
-          updateSession(session.id, session)
+          const newSession = createSession(session.name)
+          updateSession(newSession.id, {
+            model: session.model,
+            messages: session.messages,
+            createdAt: session.createdAt,
+            updatedAt: session.updatedAt,
+          })
         }
       }
       

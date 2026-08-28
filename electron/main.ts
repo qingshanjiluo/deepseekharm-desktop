@@ -7,7 +7,7 @@ import { TrayManager } from './native/tray'
 import { AutoUpdater } from './native/auto-updater'
 import { SecurityManager } from './security'
 
-const { app, BrowserWindow, session } = electron
+const { app, BrowserWindow } = electron
 
 // 全局变量控制退出行为
 declare global {
@@ -57,9 +57,6 @@ class DeepSeekHarnessDesktop {
     // 初始化自动更新
     this.autoUpdater.initialize(mainWindow)
 
-    // 配置CSP
-    this.configureCSP()
-
     // macOS: 点击图标时重新创建窗口
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
@@ -81,19 +78,6 @@ class DeepSeekHarnessDesktop {
     })
 
     console.log('DeepSeek Harness Desktop initialized')
-  }
-
-  private configureCSP(): void {
-    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Content-Security-Policy': [
-            "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss:; frame-src 'none'; object-src 'none';"
-          ]
-        }
-      })
-    })
   }
 }
 

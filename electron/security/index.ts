@@ -26,13 +26,18 @@ export class SecurityManager {
   }
 
   private configureCSP(): void {
+    const isDev = !app.isPackaged
+    const scriptSrc = isDev 
+      ? "'self' 'unsafe-eval' 'unsafe-inline'" 
+      : "'self' 'unsafe-inline'"
+
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
       callback({
         responseHeaders: {
           ...details.responseHeaders,
           'Content-Security-Policy': [
             "default-src 'self'; " +
-            "script-src 'self' 'unsafe-eval' 'unsafe-inline'; " +
+            `script-src ${scriptSrc}; ` +
             "style-src 'self' 'unsafe-inline'; " +
             "img-src 'self' data: https:; " +
             "font-src 'self' data:; " +

@@ -39,10 +39,21 @@ declare global {
         readFile: (path: string) => Promise<string>
         writeFile: (path: string, content: string) => Promise<void>
         readDir: (path: string) => Promise<any[]>
+        mkdir: (path: string, options?: { recursive?: boolean }) => Promise<void>
+        unlink: (path: string) => Promise<void>
         pickDirectory: () => Promise<string | null>
         pickFile: (options?: any) => Promise<string | null>
         exists: (path: string) => Promise<boolean>
         stat: (path: string) => Promise<any>
+      }
+      dialog: {
+        save: (options?: any) => Promise<{ canceled: boolean; filePath?: string }>
+        open: (options?: any) => Promise<{ canceled: boolean; filePaths: string[] }>
+      }
+      mcp: {
+        connect: (serverId: string) => Promise<any>
+        disconnect: (serverId: string) => Promise<any>
+        executeTool: (serverId: string, toolName: string, args: any) => Promise<any>
       }
       system: {
         getPlatform: () => Promise<string>

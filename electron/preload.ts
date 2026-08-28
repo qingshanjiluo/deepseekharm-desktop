@@ -157,10 +157,26 @@ const deepSeekAPI: DeepSeekAPI = {
     readFile: (path: string) => ipcRenderer.invoke('fs:readFile', path),
     writeFile: (path: string, content: string) => ipcRenderer.invoke('fs:writeFile', path, content),
     readDir: (path: string) => ipcRenderer.invoke('fs:readDir', path),
+    mkdir: (path: string, options?: { recursive?: boolean }) => ipcRenderer.invoke('fs:mkdir', path, options),
+    unlink: (path: string) => ipcRenderer.invoke('fs:unlink', path),
     pickDirectory: () => ipcRenderer.invoke('fs:pickDirectory'),
     pickFile: (options?: FileDialogOptions) => ipcRenderer.invoke('fs:pickFile', options),
     exists: (path: string) => ipcRenderer.invoke('fs:exists', path),
     stat: (path: string) => ipcRenderer.invoke('fs:stat', path),
+  }
+
+  // 对话框
+  dialog: {
+    save: (options?: SaveDialogOptions) => ipcRenderer.invoke('dialog:save', options),
+    open: (options?: OpenDialogOptions) => ipcRenderer.invoke('dialog:open', options),
+  }
+
+  // MCP
+  mcp: {
+    connect: (serverId: string) => ipcRenderer.invoke('mcp:connect', serverId),
+    disconnect: (serverId: string) => ipcRenderer.invoke('mcp:disconnect', serverId),
+    executeTool: (serverId: string, toolName: string, args: Record<string, unknown>) => 
+      ipcRenderer.invoke('mcp:executeTool', serverId, toolName, args),
   },
 
   // 系统信息
@@ -189,7 +205,7 @@ if (process.env.ELECTRON_RENDERER_REMOTE) {
 contextBridge.exposeInMainWorld('deepSeek', deepSeekAPI)
 
 // 导出类型
-export type { DeepSeekAPI, StreamOptions, StreamChunk, ModelInfo, LlmConfig, ToolResult, ToolInfo, SessionInfo, SessionData, DirEntry, FileDialogOptions, FileStat, UpdateInfo, UpdateProgress, NotificationData }
+export type { DeepSeekAPI, StreamOptions, StreamChunk, ModelInfo, LlmConfig, ToolResult, ToolInfo, SessionInfo, SessionData, DirEntry, FileDialogOptions, FileStat, UpdateInfo, UpdateProgress, NotificationData, SaveDialogOptions, OpenDialogOptions }
 
 // 类型定义
 interface StreamOptions {
@@ -200,6 +216,7 @@ interface StreamOptions {
   tools?: Array<{ name: string; description: string; parameters: unknown }>
   temperature?: number
   maxTokens?: number
+  signal?: AbortSignal
 }
 
 interface StreamChunk {
@@ -289,4 +306,17 @@ interface NotificationData {
   body: string
   icon?: string
   onclick?: string
+}
+
+interface SaveDialogOptions {
+  title?: string
+  defaultPath?: string
+  filters?: Array<{ name: string; extensions: string[] }>
+}
+
+interface OpenDialogOptions {
+  title?: string
+  defaultPath?: string
+  filters?: Array<{ name: string; extensions: string[] }>
+  properties?: Array<'openFile' | 'openDirectory' | 'multiSelections'>
 }

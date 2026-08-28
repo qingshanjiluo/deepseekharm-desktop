@@ -21,10 +21,8 @@ const SETTINGS_FILE = 'settings.json'
 /**
  * 获取存储目录路径
  */
-function getStorageDir(): string {
-  const home = window.electron?.process?.env?.HOME || 
-               window.electron?.process?.env?.USERPROFILE || 
-               '~'
+async function getStorageDir(): Promise<string> {
+  const home = await window.deepSeek?.system?.getHomeDir() || '~'
   return `${home}/${STORAGE_DIR}`
 }
 
@@ -47,7 +45,7 @@ export class StorageService {
    * 保存会话列表
    */
   async saveSessions(sessions: Session[]): Promise<void> {
-    const dir = getStorageDir()
+    const dir = await getStorageDir()
     await ensureDir(dir)
     const filePath = `${dir}/${SESSIONS_FILE}`
     const data = JSON.stringify(sessions, null, 2)
@@ -59,7 +57,7 @@ export class StorageService {
    */
   async loadSessions(): Promise<Session[]> {
     try {
-      const dir = getStorageDir()
+      const dir = await getStorageDir()
       const filePath = `${dir}/${SESSIONS_FILE}`
       const data = await window.deepSeek?.fs?.readFile(filePath)
       return data ? JSON.parse(data) : []
@@ -73,7 +71,7 @@ export class StorageService {
    * 保存消息
    */
   async saveMessages(sessionId: string, messages: Message[]): Promise<void> {
-    const dir = `${getStorageDir()}/${MESSAGES_DIR}`
+    const dir = `${await getStorageDir()}/${MESSAGES_DIR}`
     await ensureDir(dir)
     const filePath = `${dir}/${sessionId}.json`
     const data = JSON.stringify(messages, null, 2)
@@ -85,7 +83,7 @@ export class StorageService {
    */
   async loadMessages(sessionId: string): Promise<Message[]> {
     try {
-      const dir = `${getStorageDir()}/${MESSAGES_DIR}`
+      const dir = `${await getStorageDir()}/${MESSAGES_DIR}`
       const filePath = `${dir}/${sessionId}.json`
       const data = await window.deepSeek?.fs?.readFile(filePath)
       return data ? JSON.parse(data) : []
@@ -99,7 +97,7 @@ export class StorageService {
    * 保存设置
    */
   async saveSettings(settings: Record<string, unknown>): Promise<void> {
-    const dir = getStorageDir()
+    const dir = await getStorageDir()
     await ensureDir(dir)
     const filePath = `${dir}/${SETTINGS_FILE}`
     const data = JSON.stringify(settings, null, 2)
@@ -111,7 +109,7 @@ export class StorageService {
    */
   async loadSettings(): Promise<Record<string, unknown> | null> {
     try {
-      const dir = getStorageDir()
+      const dir = await getStorageDir()
       const filePath = `${dir}/${SETTINGS_FILE}`
       const data = await window.deepSeek?.fs?.readFile(filePath)
       return data ? JSON.parse(data) : null
@@ -126,7 +124,7 @@ export class StorageService {
    */
   async deleteSession(sessionId: string): Promise<void> {
     try {
-      const dir = `${getStorageDir()}/${MESSAGES_DIR}`
+      const dir = `${await getStorageDir()}/${MESSAGES_DIR}`
       const filePath = `${dir}/${sessionId}.json`
       await window.deepSeek?.fs?.unlink(filePath)
     } catch (error) {
@@ -135,7 +133,7 @@ export class StorageService {
   }
 
   /**
-   * 导出会话到文件
+   * 导出会话到 JSON 字符串
    */
   async exportSessions(
     sessionIds: string[],
@@ -174,10 +172,10 @@ export class StorageService {
     return {
       sessions: parsed.sessions.map(s => ({
         ...s,
-        createdAt: new Date(s.createdAt).getTime(),
-        updatedAt: new Date(s.updatedAt).getTime(),
+        createdAt: typeof s.createdAt === 'string' ? new Date(s.createdAt).getTime() : s.createdAt,
+        updatedAt: typeof s.updatedAt === 'string' ? new Date(s.updatedAt).getTime() : s.updatedAt,
       })),
-      messages: parsed.messages,
+      messages: parsed.messages || {},
     }
   }
 

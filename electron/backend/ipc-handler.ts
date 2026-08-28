@@ -1,9 +1,12 @@
 import electron from 'electron'
 const { ipcMain, BrowserWindow, dialog, app, shell } = electron
 import { join } from 'path'
-import { readFile, writeFile, readdir, stat, access, mkdir } from 'fs/promises'
+import { readFile, writeFile, readdir, stat, access, mkdir, unlink } from 'fs/promises'
 import { homedir, tmpdir } from 'os'
 import { CordisRuntime } from './cordis-runtime'
+
+// 存储活跃的流 AbortController
+const activeStreams = new Map<string, AbortController>()
 
 /**
  * IPC处理器
@@ -69,10 +72,14 @@ export class IPCHandler {
       const { rpcId, options } = data
       const llmService = this.runtime.getService<{ stream: (o: Record<string, unknown>) => AsyncIterable<Record<string, unknown>> }>('llm')
 
+      const abortController = new AbortController()
+      activeStreams.set(rpcId, abortController)
+
       try {
-        const stream = llmService.stream(options)
+        const stream = llmService.stream({ ...options, signal: abortController.signal })
         
         for await (const chunk of stream) {
+          if (abortController.signal.aborted) break
           if (!this.mainWindow.isDestroyed()) {
             this.mainWindow.webContents.send('llm:stream-chunk', { rpcId, chunk })
           }
@@ -82,20 +89,27 @@ export class IPCHandler {
           this.mainWindow.webContents.send('llm:stream-chunk', { rpcId, done: true })
         }
       } catch (error) {
-        console.error('Stream error:', error)
-        if (!this.mainWindow.isDestroyed()) {
-          this.mainWindow.webContents.send('llm:stream-chunk', {
-            rpcId,
-            done: true,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          })
+        if (!abortController.signal.aborted) {
+          console.error('Stream error:', error)
+          if (!this.mainWindow.isDestroyed()) {
+            this.mainWindow.webContents.send('llm:stream-chunk', {
+              rpcId,
+              done: true,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            })
+          }
         }
+      } finally {
+        activeStreams.delete(rpcId)
       }
     })
 
     ipcMain.on('llm:stream-cancel', (_event, data: { rpcId: string }) => {
-      console.log('Stream cancelled:', data.rpcId)
-      // TODO: 实现实际的取消逻辑
+      const controller = activeStreams.get(data.rpcId)
+      if (controller) {
+        controller.abort()
+        activeStreams.delete(data.rpcId)
+      }
     })
 
     // 工具相关
@@ -190,6 +204,14 @@ export class IPCHandler {
       }
     })
 
+    ipcMain.handle('fs:mkdir', async (_event, dirPath: string, options?: { recursive?: boolean }) => {
+      await mkdir(dirPath, { recursive: options?.recursive ?? true })
+    })
+
+    ipcMain.handle('fs:unlink', async (_event, filePath: string) => {
+      await unlink(filePath)
+    })
+
     // 系统信息
     ipcMain.handle('system:getPlatform', () => {
       return process.platform
@@ -214,6 +236,36 @@ export class IPCHandler {
 
     ipcMain.handle('shell:showItemInFolder', async (_event, fullPath: string) => {
       shell.showItemInFolder(fullPath)
+    })
+
+    // 对话框
+    ipcMain.handle('dialog:save', async (_event, options?: electron.SaveDialogOptions) => {
+      const result = await dialog.showSaveDialog(this.mainWindow, options)
+      return { canceled: result.canceled, filePath: result.filePath }
+    })
+
+    ipcMain.handle('dialog:open', async (_event, options?: electron.OpenDialogOptions) => {
+      const result = await dialog.showOpenDialog(this.mainWindow, options)
+      return { canceled: result.canceled, filePaths: result.filePaths }
+    })
+
+    // MCP 服务器管理（placeholder - 需要 child_process 实现 stdio 连接）
+    ipcMain.handle('mcp:connect', async (_event, serverId: string) => {
+      console.log('MCP connect:', serverId)
+      // TODO: 使用 child_process.spawn 启动 MCP 服务器进程
+      return { success: true }
+    })
+
+    ipcMain.handle('mcp:disconnect', async (_event, serverId: string) => {
+      console.log('MCP disconnect:', serverId)
+      // TODO: 终止 MCP 服务器进程
+      return { success: true }
+    })
+
+    ipcMain.handle('mcp:executeTool', async (_event, serverId: string, toolName: string, args: Record<string, unknown>) => {
+      console.log('MCP execute tool:', serverId, toolName, args)
+      // TODO: 通过 MCP 协议调用工具
+      throw new Error('MCP tool execution not yet implemented')
     })
 
     console.log('IPC handlers registered')
