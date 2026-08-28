@@ -163,13 +163,13 @@ const deepSeekAPI: DeepSeekAPI = {
     pickFile: (options?: FileDialogOptions) => ipcRenderer.invoke('fs:pickFile', options),
     exists: (path: string) => ipcRenderer.invoke('fs:exists', path),
     stat: (path: string) => ipcRenderer.invoke('fs:stat', path),
-  }
+  },
 
   // 对话框
   dialog: {
     save: (options?: SaveDialogOptions) => ipcRenderer.invoke('dialog:save', options),
     open: (options?: OpenDialogOptions) => ipcRenderer.invoke('dialog:open', options),
-  }
+  },
 
   // MCP
   mcp: {

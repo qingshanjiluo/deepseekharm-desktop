@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { knowledgeService, KnowledgeDocument, SearchResult } from '../../backend/knowledge-service'
+import { knowledgeService, KnowledgeDocument, SearchResult } from '../../services/knowledge-service'
 import { useTranslation } from '../../i18n'
 import './KnowledgePanel.css'
 

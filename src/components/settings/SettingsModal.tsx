@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useAppStore } from '../../store'
 import { useTranslation, localeNames, Locale } from '../../i18n'
-import { storageService } from '../../backend/storage-service'
+import { storageService } from '../../services/storage-service'
 import './SettingsModal.css'
 
 interface SettingsModalProps {

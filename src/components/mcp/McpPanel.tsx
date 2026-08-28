@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { mcpService, McpServer, McpTool } from '../../backend/mcp-service'
+import { mcpService, McpServer, McpTool } from '../../services/mcp-service'
 import './McpPanel.css'
 
 interface McpPanelProps {
