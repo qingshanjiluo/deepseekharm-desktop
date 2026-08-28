@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useAppStore } from '../../store'
 import { useTranslation, localeNames, Locale } from '../../i18n'
 import { storageService } from '../../services/storage-service'
+import { ProviderEditor } from './ProviderEditor'
+import { ModelListEditor } from './ModelListEditor'
 import './SettingsModal.css'
 
 interface SettingsModalProps {
@@ -273,6 +275,36 @@ function ModelSettings({
 }) {
   const [apiKey, setApiKey] = useState(settings.apiKey || '')
   const [apiEndpoint, setApiEndpoint] = useState(settings.apiEndpoint || '')
+  const [providers, setProviders] = useState<any[]>(settings.providers || [])
+  const [modelList, setModelList] = useState<any[]>(settings.modelList || [
+    { id: 'deepseek-chat', name: 'deepseek-chat', displayName: 'DeepSeek Chat', maxTokens: 8192, enabled: true },
+    { id: 'deepseek-reasoner', name: 'deepseek-reasoner', displayName: 'DeepSeek Reasoner', maxTokens: 8192, enabled: true },
+    { id: 'gpt-4o', name: 'gpt-4o', displayName: 'GPT-4o', maxTokens: 128000, enabled: true },
+    { id: 'gpt-4o-mini', name: 'gpt-4o-mini', displayName: 'GPT-4o Mini', maxTokens: 128000, enabled: true },
+    { id: 'claude-3-5-sonnet', name: 'claude-3-5-sonnet-20241022', displayName: 'Claude 3.5 Sonnet', maxTokens: 200000, enabled: true },
+  ])
+
+  const handleSaveApiKey = () => onUpdate({ apiKey })
+  const handleSaveEndpoint = () => onUpdate({ apiEndpoint })
+  const handleProvidersChange = (newProviders: any[]) => {
+    setProviders(newProviders)
+    onUpdate({ providers: newProviders })
+  }
+  const handleModelListChange = (newList: any[]) => {
+    setModelList(newList)
+    onUpdate({ modelList: newList })
+  }
+  const handleResetModels = () => {
+    const defaults = [
+      { id: 'deepseek-chat', name: 'deepseek-chat', displayName: 'DeepSeek Chat', maxTokens: 8192, enabled: true },
+      { id: 'deepseek-reasoner', name: 'deepseek-reasoner', displayName: 'DeepSeek Reasoner', maxTokens: 8192, enabled: true },
+      { id: 'gpt-4o', name: 'gpt-4o', displayName: 'GPT-4o', maxTokens: 128000, enabled: true },
+      { id: 'gpt-4o-mini', name: 'gpt-4o-mini', displayName: 'GPT-4o Mini', maxTokens: 128000, enabled: true },
+      { id: 'claude-3-5-sonnet', name: 'claude-3-5-sonnet-20241022', displayName: 'Claude 3.5 Sonnet', maxTokens: 200000, enabled: true },
+    ]
+    setModelList(defaults)
+    onUpdate({ modelList: defaults })
+  }
 
   return (
     <div className="settings-section">
@@ -291,10 +323,7 @@ function ModelSettings({
             placeholder="sk-..."
             className="text-input"
           />
-          <button 
-            className="save-btn"
-            onClick={() => onUpdate({ apiKey })}
-          >
+          <button className="save-btn" onClick={handleSaveApiKey}>
             {t.common.save}
           </button>
         </div>
@@ -313,10 +342,7 @@ function ModelSettings({
             placeholder="https://api.deepseek.com"
             className="text-input"
           />
-          <button 
-            className="save-btn"
-            onClick={() => onUpdate({ apiEndpoint })}
-          >
+          <button className="save-btn" onClick={handleSaveEndpoint}>
             {t.common.save}
           </button>
         </div>
@@ -332,16 +358,16 @@ function ModelSettings({
           onChange={(e) => onUpdate({ model: e.target.value })}
           className="select-input"
         >
-          <option value="deepseek-chat">DeepSeek Chat</option>
-          <option value="deepseek-coder">DeepSeek Coder</option>
-          <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+          {modelList.filter(m => m.enabled).map(m => (
+            <option key={m.id} value={m.name}>{m.displayName}</option>
+          ))}
         </select>
       </div>
 
       <div className="setting-item vertical">
         <div className="setting-label">
-          <span className="label-text">{t.settings.defaultModel.replace('默认', '')}</span>
-          <span className="label-desc">{t.settings.apiEndpointDesc}</span>
+          <span className="label-text">Provider</span>
+          <span className="label-desc">选择 API 提供商</span>
         </div>
         <select
           value={settings.provider}
@@ -350,9 +376,18 @@ function ModelSettings({
         >
           <option value="deepseek">DeepSeek 官方</option>
           <option value="openai">OpenAI 兼容</option>
+          <option value="anthropic">Anthropic</option>
           <option value="custom">自定义</option>
         </select>
       </div>
+
+      <div className="setting-divider" />
+
+      <ProviderEditor providers={providers} onChange={handleProvidersChange} />
+      
+      <div className="setting-divider" />
+
+      <ModelListEditor models={modelList} onChange={handleModelListChange} onReset={handleResetModels} />
     </div>
   )
 }
