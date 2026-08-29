@@ -12,7 +12,7 @@ export default defineConfig({
         formats: ['cjs']
       },
       rollupOptions: {
-        external: ['electron'],
+        external: ['electron', 'electron-updater'],
         output: {
           entryFileNames: '[name].js'
         }
